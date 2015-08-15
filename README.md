@@ -16,4 +16,4 @@ We couldn't find existing implementations of tools like multiple-assert, interfa
 ## Name
 Whakamātautau ki te mate!
 
-![Whaka!](http://i.imgur.com/CEAYRqW.jpg)
+<img src="http://i.imgur.com/CEAYRqW.jpg" width="400" alt="Whaka!">
