@@ -190,7 +190,7 @@
 	</distributionManagement>
 
 	<scm>
-		<url>git@github.com:vantuz-subhuman/whakamatautau-util.git</url>
+		<url>scm:git:git@github.com:vantuz-subhuman/whakamatautau-util.git</url>
 		<connection>scm:git:git@github.com:vantuz-subhuman/whakamatautau-util.git</connection>
 		<developerConnection>scm:git:git@github.com:vantuz-subhuman/whakamatautau-util.git</developerConnection>
 	</scm>
