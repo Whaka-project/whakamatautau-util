@@ -23,6 +23,11 @@
 			<email>vantuz-subhuman@yandex.ru</email>
 			<url>https://github.com/vantuz-subhuman</url>
 		</developer>
+		<developer>
+			<id>visitorus</id>
+			<name>Visitorus</name>
+			<url>https://github.com/visitorus</url>
+		</developer>
 	</developers>
 
 	<properties>
