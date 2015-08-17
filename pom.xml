@@ -3,7 +3,7 @@
 
 	<groupId>org.whaka</groupId>
 	<artifactId>whakamatautau-util</artifactId>
-	<version>0.0.7</version>
+	<version>0.0.8-SNAPSHOT</version>
 	<name>Whakamatautau-Util</name>
 	<description>Testing Tools To Level Down Your Tests</description>
 
@@ -192,7 +192,7 @@
 		<url>https://vantuz-subhuman@github.com/vantuz-subhuman/whakamatautau-util.git</url>
 		<connection>scm:git:https://vantuz-subhuman@github.com/vantuz-subhuman/whakamatautau-util.git</connection>
 		<developerConnection>scm:git:https://vantuz-subhuman@github.com/vantuz-subhuman/whakamatautau-util.git</developerConnection>
-	  <tag>whakamatautau-util-0.0.7</tag>
+	  <tag>HEAD</tag>
   </scm>
 
 </project>
