@@ -6,6 +6,7 @@
 	<version>0.0.8-SNAPSHOT</version>
 	<name>Whakamatautau-Util</name>
 	<description>Testing Tools To Level Down Your Tests</description>
+	<url>https://github.com/vantuz-subhuman/whakamatautau-util</url>
 
 	<licenses>
 		<license>
