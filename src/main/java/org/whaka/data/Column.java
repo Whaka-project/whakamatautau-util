@@ -53,7 +53,7 @@ public final class Column<T> {
 	}
 
 	/**
-	 * Equal to {@link #getKey().getType()}
+	 * Equal to #getKey().getType()
 	 */
 	public Class<T> getType() {
 		return key.type;
