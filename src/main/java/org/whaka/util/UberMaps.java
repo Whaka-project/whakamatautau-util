@@ -22,7 +22,7 @@ public class UberMaps {
 	}
 	
 	/**
-	 * <p>Create instance of the {@link UberMaps.Entry} that implements {@link Map.Entry}.
+	 * <p>Create instance of the {@link UberMaps.Entry} that implements {@link java.util.Map.Entry}.
 	 * <p><b>Note:</b> result entry is immutable!
 	 */
 	public static <K,V> Entry<K, V> entry(K key, V val) {
@@ -31,7 +31,7 @@ public class UberMaps {
 	
 	
 	/**
-	 * <p><b>Immutable</b> implementation of {@link Map.Entry}.
+	 * <p><b>Immutable</b> implementation of {@link java.util.Map.Map.Entry}.
 	 * 
 	 * <p>Entry also implements {@link Predicate} of a map, and tests whether specified map contains an entry
 	 * like this one: {@link Entry#test(Map)}.
