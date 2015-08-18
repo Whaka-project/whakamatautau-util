@@ -13,7 +13,5 @@ Bunch of tools that we've found usable for extended automation-testing or other 
 ## Why
 We couldn't find existing implementations of tools like multiple-assert, interface-compare and (especially) pair-wise shuffle. So we decided to do the bike.
 
-## Name
-Whakamātautau ki te mate!
-
+## <span title="Test to death!">Whakamātautau ki te mate!</span>
 <img src="http://i.imgur.com/CEAYRqW.jpg" width="400" alt="Whaka!">
