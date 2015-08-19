@@ -1,4 +1,4 @@
-package org.whaka.asserts.builder
+package org.whaka.asserts
 
 import static org.whaka.TestData.*
 

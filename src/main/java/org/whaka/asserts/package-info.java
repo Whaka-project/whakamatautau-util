@@ -1,6 +1,6 @@
 /**
  * <p>Package represents a framework to perform assertion of certain conditions. All functionality is based
- * on the class {@link org.whaka.asserts.builder.AssertBuilder AssertBuilder} from the package
+ * on the class {@link org.whaka.asserts.AssertBuilder AssertBuilder} from the package
  * {@link org.whaka.asserts.builder asserts.builder}. Please check out its documentation for
  * complete understanding of functionality.
  * 

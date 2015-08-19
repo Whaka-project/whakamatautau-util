@@ -1,11 +1,6 @@
 package org.whaka.asserts;
 
-import java.util.Collection;
-import java.util.function.Consumer;
-
 import org.hamcrest.Matcher;
-
-import org.whaka.asserts.builder.AssertBuilder;
 
 /**
  * <p>Entry point for all the functionality in the "Assertion framework". Not instantiable. Provides bunch of static
@@ -39,24 +34,6 @@ public class Assert {
 	}
 	
 	/**
-	 * Equivalent to:
-	 * <pre>
-	 * 	#builder().perform(builderConfiguration).performAssert();
-	 * </pre>
-	 */
-	public static void buildAndPerform(Consumer<AssertBuilder> builderConfiguration) {
-		builder().perform(builderConfiguration).performAssert();
-	}
-	
-	/**
-	 * <p>Create message and throw {@link AssertError} immediately.
-	 * <p>Equivalent to {@link AssertBuilder#addMessage(String)}
-	 */
-	public static void fail(String message) {
-		builder().addMessage(message).performAssert();
-	}
-	
-	/**
 	 * <p>Create message with arguments and throw {@link AssertError} immediately.
 	 * <p>Equivalent to {@link AssertBuilder#addMessage(String, Object...)}
 	 */
@@ -64,61 +41,24 @@ public class Assert {
 		builder().addMessage(message, args).performAssert();
 	}
 	
-	public static <T> ObjectAssert<T> assertObject(T actual) {
-		return new ObjectAssert<>(actual);
-	}
-	
-	public static BooleanAssert assertBoolean(Boolean actual) {
-		return new BooleanAssert(actual);
-	}
-	
-	public static NumberAssert assertNumber(Number actual) {
-		return new NumberAssert(actual);
-	}
-	
-	public static StringAssert assertString(String actual) {
-		return new StringAssert(actual);
-	}
-	
-	public static <T> CollectionAssert<T> assertCollection(Collection<? extends T> actual) {
-		return new CollectionAssert<T>(actual);
-	}
-	
-	public static ThrowableAssert assertThrowable(Throwable actual) {
-		return new ThrowableAssert(actual);
-	}
-	
-	/**
-	 * Equivalent to:
-	 * <pre>
-	 * 	#assertThrowable(null).isInstanceOf(expected);
-	 * </pre>
-	 */
-	public static void assertThrowableExpected(Class<? extends Throwable> expected) {
-		assertThrowable(null).isInstanceOf(expected);
-	}
-	
-	/**
-	 * Equivalent to:
-	 * <pre>
-	 * 	#assertThrowable(t).notExpected();
-	 * </pre>
-	 */
-	public static void notExpected(Throwable t) {
-		assertThrowable(t).notExpected();
-	}
-	
 	/**
 	 * Equal to the {@link #assertThat(Object, Matcher, String)}, but with null message.
 	 */
 	public static <T> void assertThat(T item, Matcher<T> matcher) {
-		buildAndPerform(b -> b.checkThat(item, matcher));
+		builder().checkThat(item, matcher).performAssert();
 	}
 	
 	/**
 	 * Performs assertion check of the specified item using hamcrest {@link Matcher} object.
 	 */
 	public static <T> void assertThat(T item, Matcher<T> matcher, String message) {
-		buildAndPerform(b -> b.checkThat(item, matcher).withMessage(message));
+		builder().checkThat(item, matcher, message).performAssert();
+	}
+	
+	/**
+	 * Performs assertion check of the specified item using hamcrest {@link Matcher} object.
+	 */
+	public static <T> void assertThat(T item, Matcher<T> matcher, String message, Throwable cause) {
+		builder().checkThat(item, matcher, message, cause).performAssert();
 	}
 }

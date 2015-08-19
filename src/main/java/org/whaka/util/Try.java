@@ -1,20 +1,23 @@
 package org.whaka.util;
 
+import static org.hamcrest.Matchers.*;
+
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import com.google.common.base.MoreObjects;
+import org.hamcrest.Matcher;
 import org.whaka.asserts.Assert;
 import org.whaka.asserts.AssertError;
-import org.whaka.asserts.ThrowableAssert;
 import org.whaka.util.function.DangerousBiFunction;
 import org.whaka.util.function.DangerousConsumer;
 import org.whaka.util.function.DangerousFunction;
 import org.whaka.util.function.DangerousRunnable;
 import org.whaka.util.function.DangerousSupplier;
+
+import com.google.common.base.MoreObjects;
 
 /**
  * <p>Use methods: {@link #run(DangerousRunnable)}, {@link #perform(DangerousSupplier)},
@@ -328,9 +331,9 @@ public class Try<R> {
 	 * If this try is not successful - new instance of the {@link ThrowableAssert} is created and passed into
 	 * specified consumer. Any errors evoked by the assert are rethrown directly.
 	 */
-	public Try<R> assertFail(Consumer<ThrowableAssert> consumer) {
+	public Try<R> assertFail(Matcher<? super Exception> matcher, String message) {
 		if (!isSuccess())
-			consumer.accept(Assert.assertThrowable(getCause()));
+			Assert.assertThat(getCause(), matcher, message);
 		return this;
 	}
 	
@@ -341,7 +344,7 @@ public class Try<R> {
 	 * </pre>
 	 */
 	public Try<R> assertFailNotExpected() {
-		return assertFail(a -> a.notExpected());
+		return assertFailNotExpected(null);
 	}
 	
 	/**
@@ -351,7 +354,7 @@ public class Try<R> {
 	 * </pre>
 	 */
 	public Try<R> assertFailNotExpected(String message) {
-		return assertFail(a -> a.notExpected(message));
+		return assertFail(nullValue(), message);
 	}
 	
 	/**
@@ -361,7 +364,7 @@ public class Try<R> {
 	 * </pre>
 	 */
 	public Try<R> assertFailIsInstanceOf(Class<? extends Exception> type) {
-		return assertFail(a -> a.isInstanceOf(type));
+		return assertFailIsInstanceOf(type, null);
 	}
 	
 	/**
@@ -371,7 +374,7 @@ public class Try<R> {
 	 * </pre>
 	 */
 	public Try<R> assertFailIsInstanceOf(Class<? extends Exception> type, String message) {
-		return assertFail(a -> a.isInstanceOf(type, message));
+		return assertFail(instanceOf(type), message);
 	}
 	
 	@Override
