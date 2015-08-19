@@ -14,7 +14,9 @@ Bunch of tools that we've found usable for extended automation-testing or other 
 We couldn't find existing implementations of tools like multiple-assert, interface-compare and (especially) pair-wise shuffle. So we decided to do the bike.
 
 ## Issue tracking
-[waffle.io/Whaka-project/whakamatautau-util](https://waffle.io/Whaka-project/whakamatautau-util)
+https://waffle.io/Whaka-project/whakamatautau-util
+
+[![Throughput Graph](https://graphs.waffle.io/Whaka-project/whakamatautau-util/throughput.svg)](https://waffle.io/Whaka-project/whakamatautau-util/metrics)
 
 ## Whakamātautau ki te mate!
 <img src="http://i.imgur.com/CEAYRqW.jpg" width="400" alt="Whaka!">
