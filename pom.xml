@@ -6,7 +6,7 @@
 	<version>0.0.8-SNAPSHOT</version>
 	<name>Whakamatautau-Util</name>
 	<description>Testing Tools To Level Down Your Tests</description>
-	<url>https://github.com/vantuz-subhuman/whakamatautau-util</url>
+	<url>https://github.com/Whaka-project/whakamatautau-util</url>
 
 	<licenses>
 		<license>
@@ -15,6 +15,11 @@
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
+
+	<organization>
+		<name>Whaka-project</name>
+		<url>https://github.com/Whaka-project</url>
+	</organization>
 	
 	<developers>
 		<developer>
@@ -190,9 +195,9 @@
 	</distributionManagement>
 
 	<scm>
-		<url>https://vantuz-subhuman@github.com/vantuz-subhuman/whakamatautau-util.git</url>
-		<connection>scm:git:https://vantuz-subhuman@github.com/vantuz-subhuman/whakamatautau-util.git</connection>
-		<developerConnection>scm:git:https://vantuz-subhuman@github.com/vantuz-subhuman/whakamatautau-util.git</developerConnection>
+		<url>https://github.com/Whaka-project/whakamatautau-util</url>
+		<connection>scm:git:https://vantuz-subhuman@github.com/Whaka-project/whakamatautau-util.git</connection>
+		<developerConnection>scm:git:https://vantuz-subhuman@github.com/Whaka-project/whakamatautau-util.git</developerConnection>
 	  <tag>HEAD</tag>
   </scm>
 
