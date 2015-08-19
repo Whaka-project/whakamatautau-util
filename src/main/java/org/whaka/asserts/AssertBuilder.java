@@ -2,6 +2,7 @@ package org.whaka.asserts;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import org.hamcrest.Matcher;
@@ -63,7 +64,10 @@ public class AssertBuilder implements Consumer<AssertResult> {
 	 * AssertResult is created with the result message and added to the builder.
 	 */
 	public AssertBuilder addMessage(String message, Object ... args) {
-		addResult(new AssertResult(String.format(message, args)));
+		Objects.requireNonNull(message, "Message cannot be null!");
+		if (args.length > 0)
+			message = String.format(message, args);
+		addResult(new AssertResult(message));
 		return this;
 	}
 	

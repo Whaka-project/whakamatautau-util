@@ -6,9 +6,6 @@ import org.hamcrest.Matcher
 
 import spock.lang.Specification
 
-import org.whaka.asserts.AssertError
-import org.whaka.asserts.AssertResult
-
 class AssertBuilderTest extends Specification {
 
 	def "results building"() {
@@ -107,7 +104,7 @@ class AssertBuilderTest extends Specification {
 			result.getMessage() == message
 			result.getCause() == null
 		where:
-			message << variousMessages()
+			message << variousMessages() - null
 	}
 
 	def "add-message with format"() {
@@ -126,164 +123,89 @@ class AssertBuilderTest extends Specification {
 			result.getCause() == null
 		where:
 			message		|	arguments	||	resultMessage
-			null		|	[]			||	null
 			""			|	[]			||	""
 			""			|	[12]		||	""
 			"%s"		|	[12]		||	"12"
 			"_%s_%d_%%"	|	[false, 42]	||	"_false_42_%"
 	}
 
-	def "assert-object"() {
+	def "add-message NPE"() {
 		given:
 			AssertBuilder builder = new AssertBuilder()
 
 		when:
-			ObjectAssertPerformer performer = builder.checkObject(actual)
+			builder.addMessage(null)
 		then:
-			performer.getActual() == actual
+			thrown(NullPointerException)
 
 		when:
-			builder.checkObject(actual).isEqual(actual).withMessage(message)
+			builder.addMessage(null, 1, 2, 3)
 		then:
-			builder.getAssertResults().size() == 0
+			thrown(NullPointerException)
 
-		when:
-			builder.checkObject(actual).isEqual(expected).withMessage(message).withCause(cause)
+			when:
+			builder.addMessage("%s", [null])
 		then:
-			builder.getAssertResults().size() == 1
-			AssertResult result = builder.getAssertResults().get(0)
-			result.getActual() == actual
-			result.getExpected() == expected
-			result.getMessage() == message
-			result.getCause() == cause
-
-		where:
-			actual << variousObjects()
-			expected << variousObjects().reverse()
-			message << variousMessages()
-			cause << variousCauses()
+			notThrown(NullPointerException)
 	}
 
-	def "assert-boolean"() {
+	def "checkThat with message and cause"() {
 		given:
+			Matcher matcher = Mock()
 			AssertBuilder builder = new AssertBuilder()
-			RuntimeException cause = new RuntimeException("some cause")
+			def cause = new RuntimeException()
 
 		when:
-			BooleanAssertPerformer performer = builder.checkBoolean(true)
+			builder.checkThat(42, matcher, "msg", cause)
 		then:
-			performer.getActual() == true
-
-		when:
-			builder.checkBoolean(true).isTrue().withMessage("never gonna happen")
-		then:
-			builder.getAssertResults().size() == 0
-
-		when:
-			builder.checkBoolean(true).isFalse().withMessage("Error[expected=%s]!", false)
-		then:
-			builder.getAssertResults().size() == 1
-			AssertResult result = builder.getAssertResults().get(0)
-			result.getActual() == true
-			result.getExpected() == false
-			result.getMessage() == "Error[expected=false]!"
-			result.getCause() == null
-
-		when:
-			builder.checkBoolean(false).isTrue().withCause(cause)
-		then:
-			builder.getAssertResults().size() == 2
-			AssertResult result2 = builder.getAssertResults().get(1)
-			result2.getActual() == false
-			result2.getExpected() == true
-			result2.getMessage() == null
-			result2.getCause() == cause
-	}
-
-	def "assert-throwable"() {
-		given:
-			AssertBuilder builder = new AssertBuilder()
-
-		when:
-			ThrowableAssertPerformer performer = builder.checkThrowable(throwable)
-		then:
-			performer.getActual().is(throwable)
-
-		when:
-			builder.checkThrowable(throwable).isInstanceOf(throwable.getClass())
-		then:
+			1 * matcher.matches(42) >> true
+		and:
+			0 * matcher._
 			builder.getAssertResults().isEmpty()
 
-		when: "not-expected is called against null value"
-			builder.checkThrowable(null).notExpected()
-		then: "assert passes successfully"
-			builder.getAssertResults().isEmpty()
-
-		when: "throwable is catched - it can be reported with not-expected method"
-			try {
-				throw throwable
-			} catch (Throwable e) {
-				builder.checkThrowable(e).notExpected()
-			}
-		then: "assert result will be added"
+		when:
+			builder.checkThat(42, matcher, "msg", cause)
+		then:
+			1 * matcher.matches(42) >> false
+		and:
+			1 * matcher.describeTo(_) >> {it[0].appendText("test test")}
+		and:
 			builder.getAssertResults().size() == 1
-			AssertResult result = builder.getAssertResults()[0]
-		and: "result will contain specific message"
-			result.getMessage() == ThrowableAssertPerformer.MESSAGE_UNEXPECTED_THROWABLE_HAPPENED
-		and: "result will contain catched CLASS as actual value, and null as expected"
-			result.getActual() == throwable.getClass()
-			result.getExpected() == null
-		and: "result will contain catched throwable as cause"
-			result.getCause() == throwable
-
-		when: "some exception was expected - it can be reported with is-instance-of"
-			try {
-				// no exception thrown
-				builder.checkThrowable(null).isInstanceOf(NullPointerException.class)
-			} catch (Exception e) {
-			}
-		then: "assert result will be added"
-			builder.getAssertResults().size() == 2
-			AssertResult result2 = builder.getAssertResults()[1]
-		and: "result will contain specific message"
-			result2.getMessage() == ThrowableAssertPerformer.MESSAGE_EXPECTED_THROWABLE_NOT_HAPPENED
-		and: "result will contain null as actual value, and expected class as expected value"
-			result2.getActual() == null
-			result2.getExpected() == NullPointerException.class
-
-		where:
-			throwable << variousCauses() - null
+			def res = builder.getAssertResults()[0]
+		and:
+			res.getActual() == 42
+			res.getExpected() == "test test"
+			res.getMessage() == "msg"
+			res.getCause().is(cause)
 	}
 
-	def "assert-collection"() {
+	def "checkThat with message"() {
 		given:
+			Matcher matcher = Mock()
 			AssertBuilder builder = new AssertBuilder()
 
 		when:
-			Collection<?> collection = ["qwe"]
-			CollectionAssertPerformer<?> performer = builder.checkCollection(collection)
+			builder.checkThat(42, matcher, "msg")
 		then:
-			performer.getActual().is(collection)
+			1 * matcher.matches(42) >> true
+		and:
+			0 * matcher._
+			builder.getAssertResults().isEmpty()
 
 		when:
-			builder.checkCollection([]).isEmpty()
-			builder.checkCollection([12, 22, 34]).contains(22)
-			builder.checkCollection([12, (int[])[1,2], 34]).contains((int[])[1,2])
-			builder.checkCollection(null).isEmptyOrNull()
-			builder.checkCollection([1,2,3,4]).containsAny([9,8,7,3])
-			builder.checkCollection([1,2,3,4]).containsAll([4,2])
+			builder.checkThat(42, matcher, "msg")
 		then:
-			builder.getAssertResults().size == 0
-
-		when:
-			builder.checkCollection([1,2,3]).isEmpty()
-		then:
-			builder.getAssertResults().size == 1
-			AssertResult result = builder.getAssertResults()[0]
-			result.getActual() == [1,2,3]
-			result.getExpected() == []
-			result.getMessage() == CollectionAssertPerformer.MESSAGE_EMPTY_COLLECTION_EXPECTED
-			result.getCause() == null
+			1 * matcher.matches(42) >> false
+		and:
+			1 * matcher.describeTo(_) >> {it[0].appendText("test test")}
+		and:
+			builder.getAssertResults().size() == 1
+			def res = builder.getAssertResults()[0]
+		and:
+			res.getActual() == 42
+			res.getExpected() == "test test"
+			res.getMessage() == "msg"
+			res.getCause() == null
 	}
 
 	def "checkThat"() {
@@ -300,7 +222,7 @@ class AssertBuilderTest extends Specification {
 			builder.getAssertResults().isEmpty()
 
 		when:
-			builder.checkThat(42, matcher).withMessage("msg")
+			builder.checkThat(42, matcher)
 		then:
 			1 * matcher.matches(42) >> false
 		and:
@@ -311,7 +233,29 @@ class AssertBuilderTest extends Specification {
 		and:
 			res.getActual() == 42
 			res.getExpected() == "test test"
-			res.getMessage() == "msg"
+			res.getMessage() == null
 			res.getCause() == null
+	}
+
+	def "checkThat for throwable adds cause"() {
+		given:
+			Matcher matcher = Mock()
+			AssertBuilder builder = new AssertBuilder()
+			def actual = new IllegalArgumentException()
+
+		when:
+			builder.checkThat(actual, matcher)
+		then:
+			1 * matcher.matches(actual) >> false
+		and:
+			1 * matcher.describeTo(_) >> {it[0].appendText("qweqwe")}
+		and:
+			builder.getAssertResults().size() == 1
+			def res = builder.getAssertResults()[0]
+		and:
+			res.getActual() == actual
+			res.getExpected() == "qweqwe"
+			res.getMessage() == null
+			res.getCause().is(actual)
 	}
 }

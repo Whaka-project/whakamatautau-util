@@ -328,8 +328,8 @@ public class Try<R> {
 	}
 	
 	/**
-	 * If this try is not successful - new instance of the {@link ThrowableAssert} is created and passed into
-	 * specified consumer. Any errors evoked by the assert are rethrown directly.
+	 * If this try is not successful - {@link Assert#assertThat(Object, Matcher, String)} is called
+	 * with the specified matcher and message. Any errors evoked by the assert are rethrown directly.
 	 */
 	public Try<R> assertFail(Matcher<? super Exception> matcher, String message) {
 		if (!isSuccess())
