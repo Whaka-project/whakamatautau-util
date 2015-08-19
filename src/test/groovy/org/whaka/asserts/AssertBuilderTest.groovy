@@ -15,7 +15,7 @@ class AssertBuilderTest extends Specification {
 
 		when:
 			for (AssertResult result : results)
-				builder.accept(result)
+				builder.addResult(result)
 		then:
 			builder.getAssertResults().equals(results)
 
@@ -46,14 +46,14 @@ class AssertBuilderTest extends Specification {
 			notThrown(AssertError)
 
 		when:
-			builder.accept(result1)
+			builder.addResult(result1)
 			builder.performAssert()
 		then:
 			AssertError e1 = thrown()
 			e1.getResults().equals([result1])
 
 		when:
-			builder.accept(result2)
+			builder.addResult(result2)
 			builder.performAssert()
 		then:
 			AssertError e2 = thrown()
@@ -67,7 +67,7 @@ class AssertBuilderTest extends Specification {
 			AssertResult result2 = new AssertResult(1, 12, "some2", new RuntimeException())
 
 		when: "assert result is 'accepted' by the builder"
-			builder.accept(result1)
+			builder.addResult(result1)
 		then: "it is available in its result list"
 			builder.getAssertResults().equals([result1])
 

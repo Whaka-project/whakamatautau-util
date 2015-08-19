@@ -3,29 +3,27 @@ package org.whaka.asserts;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Consumer;
 
 import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 import org.hamcrest.StringDescription;
 
 /**
- * Class provides ability to construct (or perform) assert error with multiple assert results.
- * <p><b>Note:</b> class implements {@link Consumer}, so methods {@link #accept(AssertResult)}
- * and {@link #addResult(AssertResult)} are synonyms, though latter returns the builder itself.
+ * <p>Class provides ability to construct (or throw) an assert error with multiple assert results.
+ * "Hamcrest Matchers" are used as main assertion tool.
  *
  * <p>It is also possible to create instance of the AssertError without throwing it, see {@link #build()}
  * method. Or to receive list of collected asserts with {@link #getAssertResults()} method.
  *
- * @see #checkThrowable(Throwable)
+ * @see Matcher
+ * @see Matchers
+ * @see #checkThat(Object, Matcher)
+ * @see #checkThat(Object, Matcher, String)
+ * @see #checkThat(Object, Matcher, String, Throwable)
  */
-public class AssertBuilder implements Consumer<AssertResult> {
+public class AssertBuilder {
 
 	private final List<AssertResult> assertResults = new ArrayList<>();
-
-	@Override
-	public void accept(AssertResult result) {
-		addResult(result);
-	}
 
 	/**
 	 * The same instance of the list is used throughout the building process.
@@ -74,6 +72,9 @@ public class AssertBuilder implements Consumer<AssertResult> {
 	/**
 	 * <p>Performs assertion check of the specified item using hamcrest {@link Matcher} object.
 	 * If matcher doesn't matches specified item - assert result is created and added to the builder.
+	 * 
+	 * @see #checkThat(Object, Matcher, String)
+	 * @see #checkThat(Object, Matcher, String, Throwable)
 	 */
 	public <T> AssertBuilder checkThat(T item, Matcher<T> matcher) {
 		return checkThat(item, matcher, null);
@@ -83,6 +84,9 @@ public class AssertBuilder implements Consumer<AssertResult> {
 	 * <p>Performs assertion check of the specified item using hamcrest {@link Matcher} object.
 	 * If matcher doesn't matches specified item - assert result is created with the specified message
 	 * and added to the builder.
+	 * 
+	 * @see #checkThat(Object, Matcher)
+	 * @see #checkThat(Object, Matcher, String, Throwable)
 	 */
 	public <T> AssertBuilder checkThat(T item, Matcher<T> matcher, String message) {
 		return checkThat(item, matcher, message, null);
@@ -92,6 +96,9 @@ public class AssertBuilder implements Consumer<AssertResult> {
 	 * <p>Performs assertion check of the specified item using hamcrest {@link Matcher} object.
 	 * If matcher doesn't matches specified item - assert result is created with the specified message,
 	 * and specified cause and added to the builder.
+	 * 
+	 * @see #checkThat(Object, Matcher)
+	 * @see #checkThat(Object, Matcher, String)
 	 */
 	public <T> AssertBuilder checkThat(T item, Matcher<T> matcher, String message, Throwable cause) {
 		if (!matcher.matches(item)) {
@@ -99,8 +106,7 @@ public class AssertBuilder implements Consumer<AssertResult> {
 			matcher.describeTo(expected);
 			if (item instanceof Throwable && cause == null)
 				cause = (Throwable) item;
-			AssertResult result = new AssertResult(item, expected.toString(), message, cause);
-			accept(result);
+			addResult(new AssertResult(item, expected.toString(), message, cause));
 		}
 		return this;
 	}

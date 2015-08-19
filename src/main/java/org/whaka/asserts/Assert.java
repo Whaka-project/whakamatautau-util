@@ -6,19 +6,18 @@ import org.hamcrest.Matcher;
  * <p>Entry point for all the functionality in the "Assertion framework". Not instantiable. Provides bunch of static
  * methods for easy access.
  *
- * <p>All "assert*" methods create corresponding specific "instant asserts" for specific types. Each instant assert
- * is a kind of a delegate for a corresponding "assert performer" from the builder package. Every time when
- * assertion method is called on an "instant assert" - new instance of the {@link AssertBuilder} is created, and after
- * assertion is performed - {@link AssertBuilder#performAssert()} is called, throwing immediate exception,
- * if preceding assert has failed. Thus "instant asserts" provide kind of a "syntactic sugar" to shorten calling
- * constructions a lot, but also reducing some functionality as a drawback. So if you need all the possible functionality
- * please use assertion builder directly.
+ * <p>"<code>assertThat</code>" methods are clones of "<code>checkThat</code>" methods from the {@link AssertBuilder},
+ * and are similar by functionality, but with assertion itself performed immediately.
  *
- * <p>Methods {@link #fail(String)} and {@link #fail(String, Object...)} allow you to create an assertion result
+ * <p>Method {@link #fail(String, Object...)} allows you to create an assertion result
  * consisting only from a single message, and then instantly throw an assertion error with this result.
  * Easiest way to momentarily indicate functional fail.
  *
  * <p>Method {@link #builder()} provides the most obvious and easy way to create instance of the {@link AssertBuilder}.
+ * 
+ * @see #assertThat(Object, Matcher)
+ * @see #assertThat(Object, Matcher, String)
+ * @see #assertThat(Object, Matcher, String, Throwable)
  */
 public class Assert {
 
@@ -42,21 +41,35 @@ public class Assert {
 	}
 	
 	/**
-	 * Equal to the {@link #assertThat(Object, Matcher, String)}, but with null message.
+	 * <p>Performs assertion check of the specified item using hamcrest {@link Matcher} object.
+	 * If item doesn't match expectations - {@link AssertError} is created, and {@link AssertError} is thrown instantly.
+	 * 
+	 * @see #assertThat(Object, Matcher, String)
+	 * @see #assertThat(Object, Matcher, String, Throwable)
 	 */
 	public static <T> void assertThat(T item, Matcher<T> matcher) {
 		builder().checkThat(item, matcher).performAssert();
 	}
 	
 	/**
-	 * Performs assertion check of the specified item using hamcrest {@link Matcher} object.
+	 * <p>Performs assertion check of the specified item using hamcrest {@link Matcher} object.
+	 * If item doesn't match expectations - {@link AssertError} is created with the specified message,
+	 * and {@link AssertError} is thrown instantly.
+	 * 
+	 * @see #assertThat(Object, Matcher)
+	 * @see #assertThat(Object, Matcher, String, Throwable)
 	 */
 	public static <T> void assertThat(T item, Matcher<T> matcher, String message) {
 		builder().checkThat(item, matcher, message).performAssert();
 	}
 	
 	/**
-	 * Performs assertion check of the specified item using hamcrest {@link Matcher} object.
+	 * <p>Performs assertion check of the specified item using hamcrest {@link Matcher} object.
+	 * If item doesn't match expectations - {@link AssertError} is created with the specified message
+	 * and the specified cause, and {@link AssertError} is thrown instantly.
+	 * 
+	 * @see #assertThat(Object, Matcher)
+	 * @see #assertThat(Object, Matcher, String)
 	 */
 	public static <T> void assertThat(T item, Matcher<T> matcher, String message, Throwable cause) {
 		builder().checkThat(item, matcher, message, cause).performAssert();
