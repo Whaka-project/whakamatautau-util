@@ -1,5 +1,5 @@
 # whakamatautau-util
-Set of utils useful for authomation testing and any everyday coding. Part of the "Whaka" project.
+Set of Java utils useful for authomation testing and any everyday coding. Part of the "Whaka" project.
 
 ## What
 Bunch of tools that we've found usable for extended automation-testing or other everyday coding:
