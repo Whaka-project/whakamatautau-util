@@ -13,7 +13,7 @@ Bunch of tools that we've found usable for extended automation-testing or other 
 ## Why
 We couldn't find existing implementations of tools like multiple-assert, interface-compare and (especially) pair-wise shuffle. So we decided to do the bike.
 
-## Issue tracking
+## Kanban
 https://waffle.io/Whaka-project/whakamatautau-util
 
 ## Whakamātautau ki te mate!
