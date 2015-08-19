@@ -16,7 +16,5 @@ We couldn't find existing implementations of tools like multiple-assert, interfa
 ## Issue tracking
 https://waffle.io/Whaka-project/whakamatautau-util
 
-[![Throughput Graph](https://graphs.waffle.io/Whaka-project/whakamatautau-util/throughput.svg)](https://waffle.io/Whaka-project/whakamatautau-util/metrics)
-
 ## Whakamātautau ki te mate!
 <img src="http://i.imgur.com/CEAYRqW.jpg" width="400" alt="Whaka!">
