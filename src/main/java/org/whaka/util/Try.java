@@ -6,7 +6,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import com.google.common.base.MoreObjects;
 import org.whaka.asserts.Assert;
 import org.whaka.asserts.AssertError;
 import org.whaka.asserts.ThrowableAssert;
@@ -15,6 +14,8 @@ import org.whaka.util.function.DangerousConsumer;
 import org.whaka.util.function.DangerousFunction;
 import org.whaka.util.function.DangerousRunnable;
 import org.whaka.util.function.DangerousSupplier;
+
+import com.google.common.base.MoreObjects;
 
 /**
  * <p>Use methods: {@link #run(DangerousRunnable)}, {@link #perform(DangerousSupplier)},
@@ -229,7 +230,7 @@ public class Try<R> {
 		return this;
 	}
 	
-	public Try<R> onPerformFailDangerous(DangerousConsumer<Exception, Exception> consumer) throws Exception {
+	public <E extends Exception> Try<R> onPerformFailDangerous(DangerousConsumer<Exception, E> consumer) throws E {
 		if (!isSuccess())
 			consumer.accept(getCause());
 		return this;
