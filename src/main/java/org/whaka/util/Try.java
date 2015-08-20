@@ -240,7 +240,7 @@ public class Try<R> {
 	 * <p>If this Try is not successful - applies specified mapper to the result of {@link #getCause()} method and then
 	 * throws result of the function.
 	 */
-	public <T extends Exception> Try<R> onPerformFailThrow(Function<Exception, T> function) throws T {
+	public <T extends Throwable> Try<R> onPerformFailThrow(Function<Exception, T> function) throws T {
 		if (!isSuccess())
 			throw function.apply(getCause());
 		return this;
