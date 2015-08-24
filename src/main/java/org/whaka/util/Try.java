@@ -232,7 +232,7 @@ public class Try<R> {
 		return this;
 	}
 	
-	public Try<R> onPerformFailDangerous(DangerousConsumer<Exception, Exception> consumer) throws Exception {
+	public <E extends Exception> Try<R> onPerformFailDangerous(DangerousConsumer<Exception, E> consumer) throws E {
 		if (!isSuccess())
 			consumer.accept(getCause());
 		return this;
@@ -242,7 +242,7 @@ public class Try<R> {
 	 * <p>If this Try is not successful - applies specified mapper to the result of {@link #getCause()} method and then
 	 * throws result of the function.
 	 */
-	public <T extends Exception> Try<R> onPerformFailThrow(Function<Exception, T> function) throws T {
+	public <T extends Throwable> Try<R> onPerformFailThrow(Function<Exception, T> function) throws T {
 		if (!isSuccess())
 			throw function.apply(getCause());
 		return this;
@@ -321,7 +321,7 @@ public class Try<R> {
 	 * Though, such use is not recommended.
 	 */
 	@SuppressWarnings("unchecked")
-	public <T extends Exception> Try<R> onPerformFailCatch(Class<T> type, Consumer<T> consumer) {
+	public <T extends Exception, E extends Exception> Try<R> onPerformFailCatch(Class<T> type, DangerousConsumer<T, E> consumer) throws E {
 		if (type.isInstance(getCause()) && caught.compareAndSet(false, true))
 			consumer.accept((T) getCause());
 		return this;
