@@ -328,8 +328,20 @@ public class Try<R> {
 	}
 	
 	/**
+	 * If this try is not successful - {@link Assert#assertThat(Object, Matcher)} is called
+	 * with the specified matcher. Any errors evoked by the assert are rethrown directly.
+	 * 
+	 * @see #assertFail(Matcher, String)
+	 */
+	public Try<R> assertFail(Matcher<? super Exception> matcher) {
+		return assertFail(matcher, null);
+	}
+	
+	/**
 	 * If this try is not successful - {@link Assert#assertThat(Object, Matcher, String)} is called
 	 * with the specified matcher and message. Any errors evoked by the assert are rethrown directly.
+	 * 
+	 * @see #assertFail(Matcher)
 	 */
 	public Try<R> assertFail(Matcher<? super Exception> matcher, String message) {
 		if (!isSuccess())
@@ -339,9 +351,8 @@ public class Try<R> {
 	
 	/**
 	 * If this try is not successful - throw an {@link AssertError} about its cause. Equivalent to:
-	 * <pre>
-	 * 	#assertFail(a -> a.notExpected())
-	 * </pre>
+	 * 
+	 * @see #assertFailNotExpected(String)
 	 */
 	public Try<R> assertFailNotExpected() {
 		return assertFailNotExpected(null);
@@ -349,9 +360,8 @@ public class Try<R> {
 	
 	/**
 	 * If this try is not successful - throw an {@link AssertError} about its cause. Equivalent to:
-	 * <pre>
-	 * 	#assertFail(a -> a.notExpected(message))
-	 * </pre>
+	 * 
+	 * @see #assertFailNotExpected()
 	 */
 	public Try<R> assertFailNotExpected(String message) {
 		return assertFail(nullValue(), message);
@@ -359,9 +369,8 @@ public class Try<R> {
 	
 	/**
 	 * If this try is not successful - check its cause is an instance of the specified class. Equivalent to:
-	 * <pre>
-	 * 	#assertFail(a -> a.isInstanceOf(type))
-	 * </pre>
+	 * 
+	 * @see #assertFailIsInstanceOf(Class, String)
 	 */
 	public Try<R> assertFailIsInstanceOf(Class<? extends Exception> type) {
 		return assertFailIsInstanceOf(type, null);
@@ -369,9 +378,8 @@ public class Try<R> {
 	
 	/**
 	 * If this try is not successful - check its cause is an instance of the specified class. Equivalent to:
-	 * <pre>
-	 * 	#assertFail(a -> a.isInstanceOf(type, message))
-	 * </pre>
+	 * 
+	 * @see #assertFailIsInstanceOf(Class)
 	 */
 	public Try<R> assertFailIsInstanceOf(Class<? extends Exception> type, String message) {
 		return assertFail(instanceOf(type), message);
