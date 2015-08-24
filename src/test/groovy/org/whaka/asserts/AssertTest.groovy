@@ -1,8 +1,9 @@
 package org.whaka.asserts
 
-import spock.lang.Specification
-
+import org.hamcrest.Matcher
 import org.whaka.TestData
+
+import spock.lang.Specification
 
 class AssertTest extends Specification {
 
@@ -19,7 +20,7 @@ class AssertTest extends Specification {
 			result.getMessage() == message
 			result.getCause() == null
 		where:
-			message << TestData.variousMessages()
+			message << TestData.variousMessages() - null
 	}
 
 	def "fail with format"() {
@@ -36,61 +37,120 @@ class AssertTest extends Specification {
 			result.getCause() == null
 		where:
 			message		|	arguments	||	resultMessage
-			null		|	[]			||	null
 			""			|	[]			||	""
 			""			|	[12]		||	""
 			"%s"		|	[12]		||	"12"
 			"_%s_%d_%%"	|	[false, 42]	||	"_false_42_%"
 	}
 
-	def "assert-object"() {
+	def "fail NPE"() {
 		when:
-			ObjectAssert _assert = Assert.assertObject(actual)
+			Assert.fail(null)
 		then:
-			_assert.getActual() == actual
-		where:
-			actual << TestData.variousObjects()
-	}
+			thrown(NullPointerException)
 
-	def "assert-boolean"() {
 		when:
-			BooleanAssert _assert = Assert.assertBoolean(actual)
+			Assert.fail(null, 1, 2, 3)
 		then:
-			_assert.getActual() == actual
-		where:
-			actual << [true, false, null]
-	}
+			thrown(NullPointerException)
 
-	def "assert-number"() {
 		when:
-			NumberAssert _assert = Assert.assertNumber(actual)
+			Assert.fail("%s", [null])
 		then:
-			_assert.getActual() == actual
-		where:
-			actual << [1, 12, Double.NaN, Double.MAX_VALUE, Double.NEGATIVE_INFINITY, null, BigDecimal.TEN, 999L]
-	}
-
-	def "assert-throwable"() {
-		when:
-			ThrowableAssert _assert = Assert.assertThrowable(throwable)
-		then:
-			_assert.getActual() == throwable
-		where:
-			throwable << TestData.variousCauses()
-	}
-
-	def "assert-collection"() {
-		when:
-			CollectionAssert<?> _assert = Assert.assertCollection(collection)
-		then:
-			_assert.getActual() == collection
-		where:
-			collection << [null, [], Collections.emptyList(), Arrays.asList(1,2,3), ["qwe", 0.5, false]]
+			thrown(AssertError)
 	}
 
 	def "builder"() {
 		expect:
 			Assert.builder().is(Assert.builder()) == false
 			Assert.builder() != null
+	}
+
+	def "assertThat with message and cause"() {
+		given:
+			Matcher matcher = Mock()
+			def cause = new RuntimeException()
+
+		when:
+			Assert.assertThat(42, matcher, "msg", cause)
+		then:
+			1 * matcher.matches(42) >> true
+		and:
+			notThrown(AssertError)
+
+		when:
+			Assert.assertThat(42, matcher, "msg", cause)
+		then:
+			1 * matcher.matches(42) >> false
+		and:
+			1 * matcher.describeTo(_) >> {it[0].appendText("test test")}
+		and:
+			AssertError error = thrown()
+		and:
+			error.getResults().size() == 1
+			def res = error.getResults()[0]
+		and:
+			res.getActual() == 42
+			res.getExpected() == "test test"
+			res.getMessage() == "msg"
+			res.getCause().is(cause)
+	}
+
+	def "assertThat with message"() {
+		given:
+			Matcher matcher = Mock()
+
+		when:
+			Assert.assertThat(42, matcher, "msg")
+		then:
+			1 * matcher.matches(42) >> true
+		and:
+			notThrown(AssertError)
+
+		when:
+			Assert.assertThat(42, matcher, "msg")
+		then:
+			1 * matcher.matches(42) >> false
+		and:
+			1 * matcher.describeTo(_) >> {it[0].appendText("test test")}
+		and:
+			AssertError error = thrown()
+		and:
+			error.getResults().size() == 1
+			def res = error.getResults()[0]
+		and:
+			res.getActual() == 42
+			res.getExpected() == "test test"
+			res.getMessage() == "msg"
+			res.getCause() == null
+	}
+
+	def "assertThat"() {
+		given:
+			Matcher matcher = Mock()
+
+		when:
+			Assert.assertThat(42, matcher)
+		then:
+			1 * matcher.matches(42) >> true
+		and:
+			notThrown(AssertError)
+
+		when:
+			Assert.assertThat(42, matcher)
+		then:
+			1 * matcher.matches(42) >> false
+		and:
+			1 * matcher.describeTo(_) >> {it[0].appendText("test test")}
+		and:
+			AssertError error = thrown()
+		and:
+			error.getResults().size() == 1
+			def res = error.getResults()[0]
+		and:
+			res.getActual() == 42
+			res.getExpected() == "test test"
+			res.getMessage() == null
+			res.getCause() == null
 	}
 }
