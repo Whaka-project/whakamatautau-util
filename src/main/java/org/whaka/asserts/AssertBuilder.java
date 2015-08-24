@@ -8,6 +8,7 @@ import java.util.Optional;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.hamcrest.StringDescription;
+import org.whaka.asserts.matcher.ResultProvidingMatcher;
 
 /**
  * <p>Class provides ability to construct (or throw) an assert error with multiple assert results.
@@ -100,13 +101,22 @@ public class AssertBuilder {
 	 * @see #checkThat(Object, Matcher, String)
 	 */
 	public <T> AssertBuilder checkThat(T item, Matcher<T> matcher, String message, Throwable cause) {
-		if (!matcher.matches(item)) {
-			StringDescription expected = new StringDescription();
-			matcher.describeTo(expected);
-			if (item instanceof Throwable && cause == null)
-				cause = (Throwable) item;
-			addResult(new AssertResult(item, expected.toString(), message, cause));
-		}
+		if (!matcher.matches(item))
+			addResult(cresteResult(item, matcher, message, cause));
 		return this;
+	}
+	
+	private static <T> AssertResult cresteResult(T item, Matcher<T> matcher, String message, Throwable cause) {
+		if (matcher instanceof ResultProvidingMatcher)
+			return ((ResultProvidingMatcher<T>)matcher).createAssertResult(item, message, cause);
+		return createDefaultResult(item, matcher, message, cause);
+	}
+	
+	private static <T> AssertResult createDefaultResult(T item, Matcher<T> matcher, String message, Throwable cause) {
+		StringDescription expected = new StringDescription();
+		matcher.describeTo(expected);
+		if (item instanceof Throwable && cause == null)
+			cause = (Throwable) item;
+		return new AssertResult(item, expected.toString(), message, cause);
 	}
 }

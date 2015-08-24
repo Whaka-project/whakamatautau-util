@@ -3,6 +3,7 @@ package org.whaka.asserts
 import static org.whaka.TestData.*
 
 import org.hamcrest.Matcher
+import org.whaka.asserts.matcher.ResultProvidingMatcher
 
 import spock.lang.Specification
 
@@ -265,5 +266,27 @@ class AssertBuilderTest extends Specification {
 			res.getExpected() == "qweqwe"
 			res.getMessage() == null
 			res.getCause().is(actual)
+	}
+
+	def "checkThat for ResultProvidingMatcher - custom result"() {
+		given:
+			ResultProvidingMatcher matcher = Mock()
+			AssertBuilder builder = new AssertBuilder()
+			Throwable cause = Mock()
+			AssertResult result = Mock()
+
+		when:
+			builder.checkThat(42, matcher, "msg", cause)
+		then:
+			1 * matcher.matches(42) >> false
+		and:
+			0 * matcher.describeTo(_)
+		and:
+			1 * matcher.createAssertResult(42, "msg", cause) >> result
+		and:
+			builder.getAssertResults().size() == 1
+			def res = builder.getAssertResults()[0]
+		and:
+			res.is(result)
 	}
 }
