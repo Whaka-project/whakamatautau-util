@@ -1,29 +1,23 @@
 package org.whaka.asserts;
 
-import java.util.Collection;
-import java.util.function.Consumer;
-
 import org.hamcrest.Matcher;
-
-import org.whaka.asserts.builder.AssertBuilder;
 
 /**
  * <p>Entry point for all the functionality in the "Assertion framework". Not instantiable. Provides bunch of static
  * methods for easy access.
  *
- * <p>All "assert*" methods create corresponding specific "instant asserts" for specific types. Each instant assert
- * is a kind of a delegate for a corresponding "assert performer" from the builder package. Every time when
- * assertion method is called on an "instant assert" - new instance of the {@link AssertBuilder} is created, and after
- * assertion is performed - {@link AssertBuilder#performAssert()} is called, throwing immediate exception,
- * if preceding assert has failed. Thus "instant asserts" provide kind of a "syntactic sugar" to shorten calling
- * constructions a lot, but also reducing some functionality as a drawback. So if you need all the possible functionality
- * please use assertion builder directly.
+ * <p>"<code>assertThat</code>" methods are clones of "<code>checkThat</code>" methods from the {@link AssertBuilder},
+ * and are similar by functionality, but with assertion itself performed immediately.
  *
- * <p>Methods {@link #fail(String)} and {@link #fail(String, Object...)} allow you to create an assertion result
+ * <p>Method {@link #fail(String, Object...)} allows you to create an assertion result
  * consisting only from a single message, and then instantly throw an assertion error with this result.
  * Easiest way to momentarily indicate functional fail.
  *
  * <p>Method {@link #builder()} provides the most obvious and easy way to create instance of the {@link AssertBuilder}.
+ * 
+ * @see #assertThat(Object, Matcher)
+ * @see #assertThat(Object, Matcher, String)
+ * @see #assertThat(Object, Matcher, String, Throwable)
  */
 public class Assert {
 
@@ -39,24 +33,6 @@ public class Assert {
 	}
 	
 	/**
-	 * Equivalent to:
-	 * <pre>
-	 * 	#builder().perform(builderConfiguration).performAssert();
-	 * </pre>
-	 */
-	public static void buildAndPerform(Consumer<AssertBuilder> builderConfiguration) {
-		builder().perform(builderConfiguration).performAssert();
-	}
-	
-	/**
-	 * <p>Create message and throw {@link AssertError} immediately.
-	 * <p>Equivalent to {@link AssertBuilder#addMessage(String)}
-	 */
-	public static void fail(String message) {
-		builder().addMessage(message).performAssert();
-	}
-	
-	/**
 	 * <p>Create message with arguments and throw {@link AssertError} immediately.
 	 * <p>Equivalent to {@link AssertBuilder#addMessage(String, Object...)}
 	 */
@@ -64,61 +40,38 @@ public class Assert {
 		builder().addMessage(message, args).performAssert();
 	}
 	
-	public static <T> ObjectAssert<T> assertObject(T actual) {
-		return new ObjectAssert<>(actual);
-	}
-	
-	public static BooleanAssert assertBoolean(Boolean actual) {
-		return new BooleanAssert(actual);
-	}
-	
-	public static NumberAssert assertNumber(Number actual) {
-		return new NumberAssert(actual);
-	}
-	
-	public static StringAssert assertString(String actual) {
-		return new StringAssert(actual);
-	}
-	
-	public static <T> CollectionAssert<T> assertCollection(Collection<? extends T> actual) {
-		return new CollectionAssert<T>(actual);
-	}
-	
-	public static ThrowableAssert assertThrowable(Throwable actual) {
-		return new ThrowableAssert(actual);
-	}
-	
 	/**
-	 * Equivalent to:
-	 * <pre>
-	 * 	#assertThrowable(null).isInstanceOf(expected);
-	 * </pre>
-	 */
-	public static void assertThrowableExpected(Class<? extends Throwable> expected) {
-		assertThrowable(null).isInstanceOf(expected);
-	}
-	
-	/**
-	 * Equivalent to:
-	 * <pre>
-	 * 	#assertThrowable(t).notExpected();
-	 * </pre>
-	 */
-	public static void notExpected(Throwable t) {
-		assertThrowable(t).notExpected();
-	}
-	
-	/**
-	 * Equal to the {@link #assertThat(Object, Matcher, String)}, but with null message.
+	 * <p>Performs assertion check of the specified item using hamcrest {@link Matcher} object.
+	 * If item doesn't match expectations - {@link AssertError} is created, and {@link AssertError} is thrown instantly.
+	 * 
+	 * @see #assertThat(Object, Matcher, String)
+	 * @see #assertThat(Object, Matcher, String, Throwable)
 	 */
 	public static <T> void assertThat(T item, Matcher<T> matcher) {
-		buildAndPerform(b -> b.checkThat(item, matcher));
+		builder().checkThat(item, matcher).performAssert();
 	}
 	
 	/**
-	 * Performs assertion check of the specified item using hamcrest {@link Matcher} object.
+	 * <p>Performs assertion check of the specified item using hamcrest {@link Matcher} object.
+	 * If item doesn't match expectations - {@link AssertError} is created with the specified message,
+	 * and {@link AssertError} is thrown instantly.
+	 * 
+	 * @see #assertThat(Object, Matcher)
+	 * @see #assertThat(Object, Matcher, String, Throwable)
 	 */
 	public static <T> void assertThat(T item, Matcher<T> matcher, String message) {
-		buildAndPerform(b -> b.checkThat(item, matcher).withMessage(message));
+		builder().checkThat(item, matcher, message).performAssert();
+	}
+	
+	/**
+	 * <p>Performs assertion check of the specified item using hamcrest {@link Matcher} object.
+	 * If item doesn't match expectations - {@link AssertError} is created with the specified message
+	 * and the specified cause, and {@link AssertError} is thrown instantly.
+	 * 
+	 * @see #assertThat(Object, Matcher)
+	 * @see #assertThat(Object, Matcher, String)
+	 */
+	public static <T> void assertThat(T item, Matcher<T> matcher, String message, Throwable cause) {
+		builder().checkThat(item, matcher, message, cause).performAssert();
 	}
 }

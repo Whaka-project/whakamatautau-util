@@ -4,9 +4,10 @@ import java.util.function.BiConsumer
 import java.util.function.Consumer
 import java.util.function.Function
 
+import org.hamcrest.Matcher
 import org.whaka.TestData
 import org.whaka.asserts.AssertError
-import org.whaka.asserts.ThrowableAssert
+import org.whaka.asserts.AssertResult
 import org.whaka.util.function.DangerousBiFunction
 import org.whaka.util.function.DangerousConsumer
 import org.whaka.util.function.DangerousFunction
@@ -634,29 +635,52 @@ class TryTest extends Specification {
 
 	def "assert fail - on success"() {
 		given:
-			Consumer consumer = Mock()
+			Matcher matcher = Mock()
 		when:
 			Try t1 = Try.perform((DangerousSupplier) { "qwe" })
-			Try t2 = t1.assertFail(consumer)
+			Try t2 = t1.assertFail(matcher, "msg")
 		then:
-			0 * consumer.accept(_)
+			0 * matcher.matches(_)
 		and:
 			t2.is(t1)
 	}
 
-	def "assert fail - on fail"() {
+	def "assert fail - on fail - success"() {
 		given:
-			ThrowableAssert captured = null
-			Consumer consumer = Mock()
+			Matcher matcher = Mock()
 		when:
 			Try t1 = Try.perform((DangerousSupplier) { throw cause })
-			Try t2 = t1.assertFail(consumer)
+			Try t2 = t1.assertFail(matcher, "msg")
 		then:
-			1 * consumer.accept(_) >> {args -> captured = args[0]}
+			1 * matcher.matches(cause) >> true
 		and:
-			captured.getActual() == cause
+			notThrown(AssertError)
 		and:
 			t2.is(t1)
+		where:
+			cause << CAUSES
+	}
+
+	def "assert fail - on fail - fail"() {
+		given:
+			Matcher matcher = Mock()
+		when:
+			Try t1 = Try.perform((DangerousSupplier) { throw cause })
+			Try t2 = t1.assertFail(matcher, "msg")
+		then:
+			1 * matcher.matches(cause) >> false
+		and:
+			1 * matcher.describeTo(_) >> {it[0].appendText("qwertyqaz")}
+		and:
+			AssertError e = thrown()
+		and:
+			e.getResults().size() == 1
+			AssertResult res = e.getResults()[0]
+		and:
+			res.getActual().is(cause)
+			res.getExpected() == "qwertyqaz"
+			res.getMessage() == "msg"
+			res.getCause().is(cause)
 		where:
 			cause << CAUSES
 	}
