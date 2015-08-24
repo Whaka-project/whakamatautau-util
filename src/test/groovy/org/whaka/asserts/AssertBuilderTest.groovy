@@ -246,28 +246,6 @@ class AssertBuilderTest extends Specification {
 			res.getCause() == null
 	}
 
-	def "checkThat for throwable adds cause"() {
-		given:
-			Matcher matcher = Mock()
-			AssertBuilder builder = new AssertBuilder()
-			def actual = new IllegalArgumentException()
-
-		when:
-			builder.checkThat(actual, matcher)
-		then:
-			1 * matcher.matches(actual) >> false
-		and:
-			1 * matcher.describeTo(_) >> {it[0].appendText("qweqwe")}
-		and:
-			builder.getAssertResults().size() == 1
-			def res = builder.getAssertResults()[0]
-		and:
-			res.getActual() == actual
-			res.getExpected() == "qweqwe"
-			res.getMessage() == null
-			res.getCause().is(actual)
-	}
-
 	def "checkThat for ResultProvidingMatcher - custom result"() {
 		given:
 			ResultProvidingMatcher matcher = Mock()

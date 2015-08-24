@@ -1,6 +1,6 @@
 package org.whaka.util;
 
-import static org.hamcrest.Matchers.*;
+import static org.whaka.asserts.UberMatchers.*;
 
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -364,7 +364,7 @@ public class Try<R> {
 	 * @see #assertFailNotExpected()
 	 */
 	public Try<R> assertFailNotExpected(String message) {
-		return assertFail(nullValue(), message);
+		return assertFail(notExpected(), message);
 	}
 	
 	/**
@@ -382,7 +382,7 @@ public class Try<R> {
 	 * @see #assertFailIsInstanceOf(Class)
 	 */
 	public Try<R> assertFailIsInstanceOf(Class<? extends Exception> type, String message) {
-		return assertFail(instanceOf(type), message);
+		return assertFail(throwableOfType(type), message);
 	}
 	
 	@Override

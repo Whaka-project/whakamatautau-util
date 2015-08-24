@@ -115,8 +115,6 @@ public class AssertBuilder {
 	private static <T> AssertResult createDefaultResult(T item, Matcher<T> matcher, String message, Throwable cause) {
 		StringDescription expected = new StringDescription();
 		matcher.describeTo(expected);
-		if (item instanceof Throwable && cause == null)
-			cause = (Throwable) item;
 		return new AssertResult(item, expected.toString(), message, cause);
 	}
 }
