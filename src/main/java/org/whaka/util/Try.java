@@ -319,7 +319,7 @@ public class Try<R> {
 	 * Though, such use is not recommended.
 	 */
 	@SuppressWarnings("unchecked")
-	public <T extends Exception> Try<R> onPerformFailCatch(Class<T> type, Consumer<T> consumer) {
+	public <T extends Exception, E extends Exception> Try<R> onPerformFailCatch(Class<T> type, DangerousConsumer<T, E> consumer) throws E {
 		if (type.isInstance(getCause()) && caught.compareAndSet(false, true))
 			consumer.accept((T) getCause());
 		return this;

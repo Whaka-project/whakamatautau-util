@@ -4,8 +4,6 @@ import java.util.function.BiConsumer
 import java.util.function.Consumer
 import java.util.function.Function
 
-import spock.lang.Specification
-
 import org.whaka.TestData
 import org.whaka.asserts.AssertError
 import org.whaka.asserts.ThrowableAssert
@@ -14,6 +12,8 @@ import org.whaka.util.function.DangerousConsumer
 import org.whaka.util.function.DangerousFunction
 import org.whaka.util.function.DangerousRunnable
 import org.whaka.util.function.DangerousSupplier
+
+import spock.lang.Specification
 
 class TryTest extends Specification {
 
@@ -457,7 +457,7 @@ class TryTest extends Specification {
 
 	def "on perform fail catch - on success"() {
 		given:
-			Consumer consumer = Mock()
+			DangerousConsumer consumer = Mock()
 			def returns = []
 		when:
 			Try t1 = Try.perform((DangerousSupplier) { "qwe" })
@@ -474,8 +474,8 @@ class TryTest extends Specification {
 
 	def "on perform fail catch - on fail - catches types"() {
 		given:
-			Consumer notCaughtConsumer = Mock()
-			Consumer caughtConsumer = Mock()
+			DangerousConsumer notCaughtConsumer = Mock()
+			DangerousConsumer caughtConsumer = Mock()
 			def returnsMap = [:]
 		when:
 			Try t = Try.perform((DangerousSupplier) { throw cause })
@@ -504,7 +504,7 @@ class TryTest extends Specification {
 
 	def "on perform fail catch - on fail - caught once"() {
 		given:
-			Consumer consumer = Mock()
+			DangerousConsumer consumer = Mock()
 			def returns = []
 		when:
 			Try t = Try.perform((DangerousSupplier) { throw cause })
@@ -523,7 +523,7 @@ class TryTest extends Specification {
 
 	def "on perform fail catch - on fail - caught once before OR after retry"() {
 		given:
-			Consumer consumer = Mock()
+			DangerousConsumer consumer = Mock()
 		when:
 			Try t = Try.perform((DangerousSupplier) { throw cause})
 			t.onPerformFailCatch(RuntimeException.class, consumer)
@@ -539,7 +539,7 @@ class TryTest extends Specification {
 
 	def "on perform fail catch - on fail - caught twice on two tries"() {
 		given:
-			Consumer consumer = Mock()
+			DangerousConsumer consumer = Mock()
 		when:
 			Try t = Try.perform((DangerousSupplier) { throw cause})
 			Try t2 = t.onPerformSuccessTry({ x -> 42})
@@ -555,7 +555,7 @@ class TryTest extends Specification {
 
 	def "isCaught"() {
 		given:
-			Consumer consumer = Mock()
+			DangerousConsumer consumer = Mock()
 			Try t = Try.perform((DangerousSupplier) { throw new IOException()})
 
 		expect:
