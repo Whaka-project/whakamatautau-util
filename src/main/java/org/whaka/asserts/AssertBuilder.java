@@ -3,6 +3,7 @@ package org.whaka.asserts;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
@@ -34,22 +35,20 @@ public class AssertBuilder {
 	}
 	
 	/**
-	 * New instance of the AssertError is returned if any assert results are present.
-	 * Otherwise null is returned.
+	 * If this builder contains any assert results (see {@link #getAssertResults()}) then an {@link Optional}
+	 * containing new instance of an AssertError will be returned. Otherwise an empty optional is returned.
 	 */
-	public AssertError build() {
-		if (assertResults.size() > 0)
-			return new AssertError(assertResults);
-		return null;
+	public Optional<AssertError> build() {
+		return assertResults.size() > 0 ? Optional.of(new AssertError(assertResults)) : Optional.empty();
 	}
 	
 	/**
 	 * Method {@link #build()} is called. If it returns instance of the AssertError - it got thrown.
 	 */
 	public void performAssert() throws AssertError {
-		AssertError error = build();
-		if (error != null)
-			throw error;
+		Optional<AssertError> error = build();
+		if (error.isPresent())
+			throw error.get();
 	}
 
 	public AssertBuilder addResult(AssertResult result) {

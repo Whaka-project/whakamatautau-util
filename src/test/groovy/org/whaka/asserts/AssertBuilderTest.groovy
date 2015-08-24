@@ -20,8 +20,8 @@ class AssertBuilderTest extends Specification {
 			builder.getAssertResults().equals(results)
 
 		when:
-			AssertError error1 = builder.build()
-			AssertError error2 = builder.build()
+			AssertError error1 = builder.build().get()
+			AssertError error2 = builder.build().get()
 		then:
 			error1.getResults().equals(results)
 			error2.getResults().equals(results)
@@ -32,6 +32,14 @@ class AssertBuilderTest extends Specification {
 			expected << variousObjects().reverse()
 			message << variousMessages()
 			cause << variousCauses()
+	}
+
+	def "build on empty builder"() {
+		given:
+			AssertBuilder builder = new AssertBuilder()
+		expect:
+			builder.build().isPresent() == false
+			builder.build().isPresent() == false
 	}
 
 	def "perform-assert"() {
@@ -74,19 +82,19 @@ class AssertBuilderTest extends Specification {
 		when: "assert result is added directly to the result list"
 			builder.getAssertResults().add(result2)
 		then: "it is available in built errors"
-			AssertError e = builder.build()
+			AssertError e = builder.build().get()
 			e.getResults().equals([result1, result2])
 
 		when: "assert result is removed directly from the result list"
 			builder.getAssertResults().remove(result1)
 		then: "it is no longer available in built errors"
-			AssertError e2 = builder.build()
+			AssertError e2 = builder.build().get()
 			e2.getResults().equals([result2])
 
 		when: "result list is directly cleared"
 			builder.getAssertResults().clear()
 		then: "no error can be built, for no results are available"
-			builder.build() == null
+			builder.build().isPresent() == false
 	}
 
 	def "add-message"() {
