@@ -680,7 +680,7 @@ class TryTest extends Specification {
 			res.getActual().is(cause)
 			res.getExpected() == "qwertyqaz"
 			res.getMessage() == "msg"
-			res.getCause().is(cause)
+			res.getCause() == null
 		where:
 			cause << CAUSES
 	}
