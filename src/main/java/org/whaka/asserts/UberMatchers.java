@@ -36,10 +36,24 @@ public final class UberMatchers {
 		return ThrowableMatcher.notExpected();
 	}
 	
+	/**
+	 * Create a matcher that will check that tested item and specified value are either both consistently matched,
+	 * or both consistently not matched by the specified matcher.
+	 * 
+	 * @see #nullConsistentWith(Object)
+	 * @see ConsistencyMatcher
+	 */
 	public static <T> Matcher<T> consistentWith(T value, Matcher<? super T> matcher) {
 		return new ConsistencyMatcher<T>(value, matcher);
 	}
 	
+	/**
+	 * Create a matcher that will check that tested item and specified value are either both consistently <b>nulls</b>,
+	 * or both consistently <b>not-nulls</b>.
+	 * 
+	 * @see #consistentWith(Object, Matcher)
+	 * @see ConsistencyMatcher
+	 */
 	public static Matcher<Object> nullConsistentWith(Object value) {
 		return consistentWith(value, Matchers.nullValue());
 	}
