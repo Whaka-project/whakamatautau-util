@@ -31,32 +31,31 @@ class ConsistencyMatcherTest extends Specification {
 			value << TestData.variousObjects()
 	}
 
-	def "matches: itself"() {
-		given:
-			Matcher matcherPositive = Mock()
-			matcherPositive.matches(value) >> true
-		and:
-			Matcher matcherNegative = Mock()
-			matcherNegative.matches(value) >> false
-		and:
-			def mPositive = new ConsistencyMatcher(value, matcherPositive)
-			def mNegative = new ConsistencyMatcher(value, matcherNegative)
+	def "matches"() {
 
-		when:
-			def res1 = mPositive.matches(value)
-		then:
-			1 * matcherPositive.matches(value) >> true
-		and:
+		given: "a delegate matcher"
+			Matcher matcher = Mock()
+
+		when: "consistency matcher is create with a 'value' and a delegate"
+			def m = new ConsistencyMatcher("value", matcher)
+		then: "delegate is immediately asked to match the value 'value'"
+			1 * matcher.matches("value") >> initialMatch
+
+		when: "consistency matcher is asked to match an 'item'"
+			def res1 = m.matches("item1")
+		then: "delegate is also asked to match the 'item'"
+			1 * matcher.matches("item1") >> initialMatch
+		and: "if 'item' is matched the same way as 'value' - result is true"
 			res1 == true
 
 		when:
-			def res2 = mNegative.matches(value)
+			def res2 = m.matches("item2")
 		then:
-			1 * matcherNegative.matches(value) >> false
-		and:
-			res2 == true
+			1 * matcher.matches("item2") >> !initialMatch
+		and: "if 'item' is matched NOT the same way as 'value' - result is negative"
+			res2 == false
 
 		where:
-			value << TestData.variousObjects()
+			initialMatch << [true, false]
 	}
 }

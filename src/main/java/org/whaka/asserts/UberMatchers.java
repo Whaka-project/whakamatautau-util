@@ -2,6 +2,7 @@ package org.whaka.asserts;
 
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
+import org.whaka.asserts.matcher.ConsistencyMatcher;
 import org.whaka.asserts.matcher.ThrowableMatcher;
 
 
@@ -35,13 +36,11 @@ public final class UberMatchers {
 		return ThrowableMatcher.notExpected();
 	}
 	
-	/**
-	 * <p>If specified object is <code>null</code> - method returns {@link Matchers#nullValue()}.
-	 * Otherwise it returns {@link Matchers#notNullValue()}
-	 * 
-	 * <p>Factory method is useful in case you
-	 */
-	public static Matcher<Object> nullConsistentWith(Object other) {
-		return other == null ? Matchers.nullValue() : Matchers.notNullValue();
+	public static <T> Matcher<T> consistentWith(T value, Matcher<? super T> matcher) {
+		return new ConsistencyMatcher<T>(value, matcher);
+	}
+	
+	public static Matcher<Object> nullConsistentWith(Object value) {
+		return consistentWith(value, Matchers.nullValue());
 	}
 }
