@@ -13,6 +13,9 @@ import org.hamcrest.Matcher;
 import org.whaka.asserts.matcher.FunctionalMatcher;
 import org.whaka.util.DoubleMath;
 
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
+
 /**
  * Class provides static factory methods for custom Hamcrest matchers related to numbers.
  * 
@@ -20,35 +23,46 @@ import org.whaka.util.DoubleMath;
  */
 public final class NumberMatchers {
 
+	private static final Supplier<Matcher<Double>> IS_NUMBER = Suppliers.memoize(
+			() -> new FunctionalMatcher<>(Double.class, DoubleMath::isNumber, "number"));
+	
+	private static final Supplier<Matcher<Double>> IS_FINITE = Suppliers.memoize(
+			() -> new FunctionalMatcher<>(Double.class, DoubleMath::isFinite, "finite number"));
+	
+	private static final Supplier<Matcher<Number>> IS_ZERO = Suppliers.memoize(
+			() -> new FunctionalMatcher<>(Number.class, convertPredicate(DoubleMath::isZero), d -> d.appendValue(0)));
+	
+	private static final Supplier<Matcher<Number>> IS_POSITIVE = Suppliers.memoize(
+			() -> new FunctionalMatcher<>(Number.class, convertPredicate(DoubleMath::isPositive), "positive number"));
+	
+	private static final Supplier<Matcher<Number>> IS_NEGATIVE = Suppliers.memoize(
+			() -> new FunctionalMatcher<>(Number.class, convertPredicate(DoubleMath::isNegative), "negative number"));
+	
 	private NumberMatchers() {
 	}
 	
 	public static Matcher<Double> number() {
-		return new FunctionalMatcher<>(Double.class, DoubleMath::isNumber, createNameDescriber("number"));
+		return IS_NUMBER.get();
 	}
 	
 	public static Matcher<Double> finite() {
-		return new FunctionalMatcher<>(Double.class, DoubleMath::isFinite, createNameDescriber("finite number"));
+		return IS_FINITE.get();
 	}
 	
 	public static Matcher<Number> zero() {
-		return new FunctionalMatcher<>(Number.class, convertPredicate(DoubleMath::isZero), d -> d.appendValue(0));
+		return IS_ZERO.get();
 	}
 	
 	public static Matcher<Number> positive() {
-		return new FunctionalMatcher<>(Number.class, convertPredicate(DoubleMath::isPositive), createNameDescriber("positive number"));
+		return IS_POSITIVE.get();
 	}
 	
 	public static Matcher<Number> negative() {
-		return new FunctionalMatcher<>(Number.class, convertPredicate(DoubleMath::isPositive), createNameDescriber("negative number"));
+		return IS_NEGATIVE.get();
 	}
 	
 	private static Predicate<Number> convertPredicate(Predicate<Double> delegate) {
 		return a -> delegate.test(asDouble(a));
-	}
-	
-	private static Consumer<Description> createNameDescriber(String operationName) {
-		return d -> d.appendText(operationName);
 	}
 	
 	public static Matcher<Number> equalTo(Number value) {
@@ -62,31 +76,26 @@ public final class NumberMatchers {
 	}
 	
 	public static Matcher<Number> greaterThan(Number value) {
-		Objects.requireNonNull(value, "Cannot compare to null!");
-		return new FunctionalMatcher<>(Number.class,
-				convertCompareResultPredicate(i -> i > 0, value),
-				createSingleValueDescriber("greater than", value));
+		return createCompareMatcher(value, i -> i > 0, "greater than");
 	}
 	
 	public static Matcher<Number> lowerThan(Number value) {
-		Objects.requireNonNull(value, "Cannot compare to null!");
-		return new FunctionalMatcher<>(Number.class,
-				convertCompareResultPredicate(i -> i < 0, value),
-				createSingleValueDescriber("lower than", value));
+		return createCompareMatcher(value, i -> i < 0, "lower than");
 	}
 	
 	public static Matcher<Number> greaterThanOrEqual(Number value) {
-		Objects.requireNonNull(value, "Cannot compare to null!");
-		return new FunctionalMatcher<>(Number.class,
-				convertCompareResultPredicate(i -> i >= 0, value),
-				createSingleValueDescriber("greater than or equal to", value));
+		return createCompareMatcher(value, i -> i >= 0, "greater than or equal to");
 	}
 	
 	public static Matcher<Number> lowerThanOrEqual(Number value) {
+		return createCompareMatcher(value, i -> i <= 0, "lower than or equal to");
+	}
+	
+	private static Matcher<Number> createCompareMatcher(Number value, IntPredicate predicate, String op) {
 		Objects.requireNonNull(value, "Cannot compare to null!");
 		return new FunctionalMatcher<>(Number.class,
-				convertCompareResultPredicate(i -> i <= 0, value),
-				createSingleValueDescriber("lower than or equal to", value));
+				convertCompareResultPredicate(predicate, value),
+				createSingleValueDescriber(op, value));
 	}
 	
 	private static Predicate<Number> convertCompareResultPredicate(IntPredicate predicate, Number value) {
@@ -98,19 +107,19 @@ public final class NumberMatchers {
 	}
 	
 	public static Matcher<Number> between(Number min, Number max) {
-		Objects.requireNonNull(min, "Cannot compare to null!");
-		Objects.requireNonNull(max, "Cannot compare to null!");
-		return new FunctionalMatcher<>(Number.class,
-				convertBiCompareResultPredicate((a, b) -> a > 0 && b < 0, min, max),
-				createBiCompareDescriber("<>", min, max));
+		return createBiCompareMatcher(min, max, (a, b) -> a > 0 && b < 0, "number between");
 	}
 	
 	public static Matcher<Number> betweenOrEqual(Number min, Number max) {
+		return createBiCompareMatcher(min, max, (a, b) -> a >= 0 && b <= 0, "number between or equal");
+	}
+	
+	private static Matcher<Number> createBiCompareMatcher(Number min, Number max, BiPredicate<Integer, Integer> predicate, String op) {
 		Objects.requireNonNull(min, "Cannot compare to null!");
 		Objects.requireNonNull(max, "Cannot compare to null!");
 		return new FunctionalMatcher<>(Number.class,
-				convertBiCompareResultPredicate((a, b) -> a >= 0 && b <= 0, min, max),
-				createBiCompareDescriber("<=>", min, max));
+				convertBiCompareResultPredicate(predicate, min, max),
+				createBiCompareDescriber(op, min, max));
 	}
 	
 	private static Predicate<Number> convertBiCompareResultPredicate(BiPredicate<Integer, Integer> predicate, Number a, Number b) {
@@ -120,6 +129,6 @@ public final class NumberMatchers {
 	}
 	
 	private static Consumer<Description> createBiCompareDescriber(String operationName, Number min, Number max) {
-		return d -> d.appendValue(min).appendText(String.format(" % ", operationName)).appendValue(max);
+		return d -> d.appendText(operationName + " ").appendValue(min).appendText(" and ").appendValue(max);
 	}
 }
