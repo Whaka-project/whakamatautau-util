@@ -3,7 +3,6 @@ package org.whaka.asserts.matcher;
 import java.util.Objects;
 
 import org.hamcrest.Description;
-import org.whaka.asserts.AssertResult;
 import org.whaka.asserts.ComparisonAssertResult;
 import org.whaka.util.reflection.comparison.ComparisonPerformer;
 import org.whaka.util.reflection.comparison.ComparisonResult;
@@ -27,11 +26,11 @@ public class ComparisonMatcher<T> extends ResultProvidingMatcher<T> {
 	}
 
 	@Override
-	public AssertResult matches(T item, String message, Throwable cause) {
+	public ComparisonAssertResult matches(T item, String message, Throwable cause) {
 		ComparisonResult comparisonResult = getComparisonPerformer().compare(item, getValue());
 		if (comparisonResult.isSuccess())
 			return null;
-		AssertResult result = ComparisonAssertResult.createWithCause(comparisonResult);
+		ComparisonAssertResult result = ComparisonAssertResult.createWithCause(comparisonResult, message);
 		if (result.getCause() == null)
 			result.setCause(cause);
 		return result;
