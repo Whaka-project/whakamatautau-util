@@ -31,7 +31,7 @@ public final class UberMatchers {
 	 * @see ComparisonMatcher
 	 * @see ComparisonPerformers
 	 */
-	public static <T> Matcher<T> comparativelyEqualTo(T item, ComparisonPerformer<? super T> performer) {
+	public static <T> Matcher<T> equalTo(T item, ComparisonPerformer<? super T> performer) {
 		return new ComparisonMatcher<>(item, performer);
 	}
 	
@@ -39,26 +39,26 @@ public final class UberMatchers {
 	 * Create a matcher that will check that tested item and specified value are equal
 	 * according to the {@link ComparisonPerformers#DEEP_EQUALS} performer.
 	 * 
-	 * @see #comparativelyEqualTo(Object, ComparisonPerformer)
+	 * @see #equalTo(Object, ComparisonPerformer)
 	 * @see #reflectivelyEqualTo(Object)
 	 * @see ComparisonMatcher
 	 * @see ComparisonPerformers
 	 */
 	public static <T> Matcher<T> deeplyEqualTo(T item) {
-		return comparativelyEqualTo(item, ComparisonPerformers.DEEP_EQUALS);
+		return equalTo(item, ComparisonPerformers.DEEP_EQUALS);
 	}
 	
 	/**
 	 * Create a matcher that will check that tested item and specified value are equal
 	 * according to the {@link ComparisonPerformers#REFLECTIVE_EQUALS} performer.
 	 * 
-	 * @see #comparativelyEqualTo(Object, ComparisonPerformer)
+	 * @see #equalTo(Object, ComparisonPerformer)
 	 * @see #deeplyEqualTo(Object)
 	 * @see ComparisonMatcher
 	 * @see ComparisonPerformers
 	 */
 	public static <T> Matcher<T> reflectivelyEqualTo(T item) {
-		return comparativelyEqualTo(item, ComparisonPerformers.REFLECTIVE_EQUALS);
+		return equalTo(item, ComparisonPerformers.REFLECTIVE_EQUALS);
 	}
 	
 	/**
