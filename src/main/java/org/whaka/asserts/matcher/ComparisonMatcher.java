@@ -3,10 +3,21 @@ package org.whaka.asserts.matcher;
 import java.util.Objects;
 
 import org.hamcrest.Description;
+import org.hamcrest.Matcher;
 import org.whaka.asserts.ComparisonAssertResult;
 import org.whaka.util.reflection.comparison.ComparisonPerformer;
+import org.whaka.util.reflection.comparison.ComparisonPerformers;
 import org.whaka.util.reflection.comparison.ComparisonResult;
 
+/**
+ * <p>{@link Matcher} implementation that allows to perform object comparison using {@link ComparisonPerformer}
+ * as delegate.
+ * 
+ * <p><b>Note:</b> matcher able to provide specific {@link ComparisonAssertResult} containing more
+ * information about performed comparison.
+ * 
+ * @see ComparisonPerformers
+ */
 public class ComparisonMatcher<T> extends ResultProvidingMatcher<T> {
 
 	private final T value;
