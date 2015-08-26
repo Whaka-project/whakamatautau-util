@@ -13,6 +13,7 @@ import org.hamcrest.Matcher;
 import org.whaka.asserts.matcher.FunctionalMatcher;
 import org.whaka.util.DoubleMath;
 
+import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 
@@ -117,6 +118,7 @@ public final class NumberMatchers {
 	private static Matcher<Number> createBiCompareMatcher(Number min, Number max, BiPredicate<Integer, Integer> predicate, String op) {
 		Objects.requireNonNull(min, "Cannot compare to null!");
 		Objects.requireNonNull(max, "Cannot compare to null!");
+		Preconditions.checkArgument(DoubleMath.compare(asDouble(min), asDouble(max)) <= 0, "min is greater than max!");
 		return new FunctionalMatcher<>(Number.class,
 				convertBiCompareResultPredicate(predicate, min, max),
 				createBiCompareDescriber(op, min, max));
