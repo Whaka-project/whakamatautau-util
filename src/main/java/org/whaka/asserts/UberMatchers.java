@@ -27,7 +27,7 @@ public final class UberMatchers {
 	 * @see RegexpMatcher
 	 */
 	public static Matcher<Object> matches(String pattern) {
-		return RegexpMatcher.matching(pattern);
+		return RegexpMatcher.create(pattern);
 	}
 	
 	/**
@@ -40,7 +40,7 @@ public final class UberMatchers {
 	 * @see RegexpMatcher
 	 */
 	public static Matcher<Object> matches(Pattern pattern) {
-		return RegexpMatcher.matching(pattern);
+		return RegexpMatcher.create(pattern);
 	}
 	
 	/**

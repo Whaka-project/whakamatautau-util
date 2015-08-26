@@ -26,14 +26,14 @@ class RegexpMatcherTest extends Specification {
 		given:
 			Pattern pattern = Pattern.compile(".")
 		when:
-			RegexpMatcher m = RegexpMatcher.matching(pattern as Pattern)
+			RegexpMatcher m = RegexpMatcher.create(pattern as Pattern)
 		then:
 			m.getPattern().is(pattern)
 	}
 
 	def "static matching: string"() {
 		when:
-			RegexpMatcher m = RegexpMatcher.matching(pattern as String)
+			RegexpMatcher m = RegexpMatcher.create(pattern as String)
 		then:
 			pattern == "${m.getPattern()}"
 		where:
@@ -43,19 +43,19 @@ class RegexpMatcherTest extends Specification {
 	def "static matching: NPE"() {
 
 		when:
-			RegexpMatcher.matching(null as Pattern)
+			RegexpMatcher.create(null as Pattern)
 		then:
 			thrown(NullPointerException)
 
 		when:
-			RegexpMatcher.matching(null as String)
+			RegexpMatcher.create(null as String)
 		then:
 			thrown(NullPointerException)
 	}
 
 	def "matches"() {
 		expect:
-			RegexpMatcher.matching(pattern as String).matches(item as Object) == result
+			RegexpMatcher.create(pattern as String).matches(item as Object) == result
 		where:
 			pattern				|	item			||	result
 			"."					|	"a"				||	true

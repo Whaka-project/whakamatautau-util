@@ -19,8 +19,8 @@ import org.hamcrest.Matchers;
  * <p><b>Note:</b> if matcher is required to match only strings, or non-null values - {@link Matchers#allOf(Matcher...)}
  * might be used to combine it with additional predicates.
  * 
- * @see #matching(String)
- * @see #matching(Pattern)
+ * @see #create(String)
+ * @see #create(Pattern)
  */
 public class RegexpMatcher extends BaseMatcher<Object> {
 
@@ -47,22 +47,22 @@ public class RegexpMatcher extends BaseMatcher<Object> {
 	/**
 	 * Creates new instance of the {@link RegexpMatcher} with a new {@link Pattern} created from the specified string.
 	 * 
-	 * @see #matching(Pattern)
+	 * @see #create(Pattern)
 	 * @throws NullPointerException if specified string is <code>null</code>
 	 */
 	@Factory
-	public static RegexpMatcher matching(String pattern) {
-		return matching(Pattern.compile(requireNonNull(pattern, "Pattern cannot be null!")));
+	public static RegexpMatcher create(String pattern) {
+		return create(Pattern.compile(requireNonNull(pattern, "Pattern cannot be null!")));
 	}
 	
 	/**
 	 * Creates new instance of the {@link RegexpMatcher} with specified pattern.
 	 * 
-	 * @see #matching(String)
+	 * @see #create(String)
 	 * @throws NullPointerException if specified pattern is <code>null</code>
 	 */
 	@Factory
-	public static RegexpMatcher matching(Pattern pattern) {
+	public static RegexpMatcher create(Pattern pattern) {
 		return new RegexpMatcher(pattern);
 	}
 }
