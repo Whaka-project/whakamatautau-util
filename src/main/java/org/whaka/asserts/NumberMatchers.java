@@ -20,10 +20,13 @@ import com.google.common.base.Suppliers;
 /**
  * Class provides static factory methods for custom Hamcrest matchers related to numbers.
  * 
+ * @see DoubleMath
  * @see UberMatchers
  */
 public final class NumberMatchers {
 
+	// Memoizers are used to ensure "invariant" matchers are instantiated on demand, BUT only once
+	
 	private static final Supplier<Matcher<Double>> IS_NUMBER = Suppliers.memoize(
 			() -> new FunctionalMatcher<>(Double.class, DoubleMath::isNumber, "number"));
 	
@@ -42,22 +45,42 @@ public final class NumberMatchers {
 	private NumberMatchers() {
 	}
 	
+	/**
+	 * Matcher equivalent of the {@link DoubleMath#isNumber(Double)}.
+	 * Matches if item is <b>not null</b> and <b>not {@link Double#NaN}</b>
+	 */
 	public static Matcher<Double> number() {
 		return IS_NUMBER.get();
 	}
 	
+	/**
+	 * Matcher equivalent of the {@link DoubleMath#isFinite(Double)}.
+	 * Matches if item is <b>not null</b>, <b>not {@link Double#NaN}</b>, and <b>is finite</b>.
+	 */
 	public static Matcher<Double> finite() {
 		return IS_FINITE.get();
 	}
 	
+	/**
+	 * Matcher equivalent of the {@link DoubleMath#isZero(Double)}.
+	 * Matches if item is <b>not null</b> and <b>equal to 0.0</b>.
+	 */
 	public static Matcher<Number> zero() {
 		return IS_ZERO.get();
 	}
 	
+	/**
+	 * <p>Matcher equivalent of the {@link DoubleMath#isPositive(Double)}.
+	 * Matches if item is <b>number</b> and <b>greater than 0.0</b>.
+	 */
 	public static Matcher<Number> positive() {
 		return IS_POSITIVE.get();
 	}
 	
+	/**
+	 * Matcher equivalent of the {@link DoubleMath#isNegative(Double)}.
+	 * Matches if item is <b>number</b> and <b>lower than 0.0</b>.
+	 */
 	public static Matcher<Number> negative() {
 		return IS_NEGATIVE.get();
 	}
@@ -66,6 +89,10 @@ public final class NumberMatchers {
 		return a -> delegate.test(asDouble(a));
 	}
 	
+	/**
+	 * Matcher equivalent of the {@link DoubleMath#equals(Double, Double)}.
+	 * Matches if item is <b>double-equal</b> to the specified number value.
+	 */
 	public static Matcher<Number> equalTo(Number value) {
 		return new FunctionalMatcher<>(Number.class,
 				convertBiPredicate(DoubleMath::equals, value),
@@ -76,18 +103,42 @@ public final class NumberMatchers {
 		return a -> delegate.test(asDouble(a), asDouble(value));
 	}
 	
+	/**
+	 * Matcher equivalent of the {@link DoubleMath#compare(double, double)}.
+	 * Matches if item is <b>not-null</b>, and <b>double-greater</b> than specified number value.
+	 * 
+	 * @throws NullPointerException if specified value is <code>null</code>
+	 */
 	public static Matcher<Number> greaterThan(Number value) {
 		return createCompareMatcher(value, i -> i > 0, "greater than");
 	}
 	
+	/**
+	 * Matcher equivalent of the {@link DoubleMath#compare(double, double)}.
+	 * Matches if item is <b>not-null</b>, and <b>double-lower</b> than specified number value.
+	 * 
+	 * @throws NullPointerException if specified value is <code>null</code>
+	 */
 	public static Matcher<Number> lowerThan(Number value) {
 		return createCompareMatcher(value, i -> i < 0, "lower than");
 	}
 	
+	/**
+	 * Matcher equivalent of the {@link DoubleMath#compare(double, double)}.
+	 * Matches if item is <b>not-null</b>, and <b>double-greater</b> than or <b>double-equal</b> to the specified number value.
+	 * 
+	 * @throws NullPointerException if specified value is <code>null</code>
+	 */
 	public static Matcher<Number> greaterThanOrEqual(Number value) {
 		return createCompareMatcher(value, i -> i >= 0, "greater than or equal to");
 	}
 	
+	/**
+	 * Matcher equivalent of the {@link DoubleMath#compare(double, double)}.
+	 * Matches if item is <b>not-null</b>, and <b>double-lower</b> than or <b>double-equal</b> to the specified number value.
+	 * 
+	 * @throws NullPointerException if specified value is <code>null</code>
+	 */
 	public static Matcher<Number> lowerThanOrEqual(Number value) {
 		return createCompareMatcher(value, i -> i <= 0, "lower than or equal to");
 	}
@@ -107,10 +158,26 @@ public final class NumberMatchers {
 		return d -> d.appendText(String.format("number %s ", operationName)).appendValue(value);
 	}
 	
+	/**
+	 * Matcher equivalent of the {@link DoubleMath#compare(double, double)} for two bound arguments.
+	 * Matches if item is <b>double-greater</b> than first specified number,
+	 * or <b>double-greater</b> than second specified argument.
+	 * 
+	 * @throws NullPointerException if either specified value is <code>null</code>
+	 * @throws IllegalArgumentException if specified min is greater than specified max
+	 */
 	public static Matcher<Number> between(Number min, Number max) {
 		return createBiCompareMatcher(min, max, (a, b) -> a > 0 && b < 0, "number between");
 	}
 	
+	/**
+	 * Matcher equivalent of the {@link DoubleMath#compare(double, double)} for two bound arguments.
+	 * Matches if item is <b>double-greater</b> than first specified number,
+	 * or <b>double-greater</b> than second specified argument, or <b>double-equal</b> to any of them.
+	 * 
+	 * @throws NullPointerException if either specified value is <code>null</code>
+	 * @throws IllegalArgumentException if specified min is greater than specified max
+	 */
 	public static Matcher<Number> betweenOrEqual(Number min, Number max) {
 		return createBiCompareMatcher(min, max, (a, b) -> a >= 0 && b <= 0, "number between or equal");
 	}
