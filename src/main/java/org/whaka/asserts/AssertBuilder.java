@@ -53,6 +53,7 @@ public class AssertBuilder {
 	}
 
 	public AssertBuilder addResult(AssertResult result) {
+		Objects.requireNonNull(result, "Assert result cannot be null!");
 		assertResults.add(result);
 		return this;
 	}
@@ -101,15 +102,18 @@ public class AssertBuilder {
 	 * @see #checkThat(Object, Matcher, String)
 	 */
 	public <T> AssertBuilder checkThat(T item, Matcher<T> matcher, String message, Throwable cause) {
-		if (!matcher.matches(item))
-			addResult(cresteResult(item, matcher, message, cause));
+		AssertResult result = cresteResult(item, matcher, message, cause);
+		if (result != null)
+			addResult(result);
 		return this;
 	}
 	
 	private static <T> AssertResult cresteResult(T item, Matcher<T> matcher, String message, Throwable cause) {
 		if (matcher instanceof ResultProvidingMatcher)
-			return ((ResultProvidingMatcher<T>)matcher).createAssertResult(item, message, cause);
-		return createDefaultResult(item, matcher, message, cause);
+			return ((ResultProvidingMatcher<T>)matcher).matches(item, message, cause);
+		if (!matcher.matches(item))
+			return createDefaultResult(item, matcher, message, cause);
+		return null;
 	}
 	
 	private static <T> AssertResult createDefaultResult(T item, Matcher<T> matcher, String message, Throwable cause) {

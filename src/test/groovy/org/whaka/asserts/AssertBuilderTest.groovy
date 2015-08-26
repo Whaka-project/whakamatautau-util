@@ -246,6 +246,22 @@ class AssertBuilderTest extends Specification {
 			res.getCause() == null
 	}
 
+	def "checkThat for ResultProvidingMatcher - success"() {
+		given:
+			ResultProvidingMatcher matcher = Mock()
+			AssertBuilder builder = new AssertBuilder()
+			Throwable cause = Mock()
+
+		when:
+			builder.checkThat(42, matcher, "msg", cause)
+		then:
+			1 * matcher.matches(42, "msg", cause) >> null
+		and:
+			0 * matcher.describeTo(_)
+		and:
+			builder.getAssertResults().size() == 0
+	}
+
 	def "checkThat for ResultProvidingMatcher - custom result"() {
 		given:
 			ResultProvidingMatcher matcher = Mock()
@@ -256,11 +272,9 @@ class AssertBuilderTest extends Specification {
 		when:
 			builder.checkThat(42, matcher, "msg", cause)
 		then:
-			1 * matcher.matches(42) >> false
+			1 * matcher.matches(42, "msg", cause) >> result
 		and:
 			0 * matcher.describeTo(_)
-		and:
-			1 * matcher.createAssertResult(42, "msg", cause) >> result
 		and:
 			builder.getAssertResults().size() == 1
 			def res = builder.getAssertResults()[0]

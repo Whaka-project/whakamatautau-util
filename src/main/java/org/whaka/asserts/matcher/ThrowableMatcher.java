@@ -35,10 +35,15 @@ public class ThrowableMatcher extends ResultProvidingMatcher<Throwable> {
 	}
 	
 	@Override
-	public boolean matches(Object item) {
-		return getExpectedType() == null ? item == null : getExpectedType().isInstance(item);
+	public AssertResult matches(Throwable item, String message, Throwable cause) {
+		if (getExpectedType() == null ? item == null : getExpectedType().isInstance(item))
+			return null;
+		Class<?> actual = ofNullable(item).map(Object::getClass).orElse(null);
+		if (cause == null)
+			cause = item;
+		return new AssertResult(actual, getExpectedMessage(), message, cause);
 	}
-
+	
 	@Override
 	public void describeTo(Description description) {
 		description.appendText(getExpectedMessage());
@@ -47,14 +52,6 @@ public class ThrowableMatcher extends ResultProvidingMatcher<Throwable> {
 	private String getExpectedMessage() {
 		return getExpectedType() == null ? "no exception"
 				: "instance of " + getExpectedType().getCanonicalName();
-	}
-	
-	@Override
-	public AssertResult createAssertResult(Throwable item, String message, Throwable cause) {
-		Class<?> actual = ofNullable(item).map(Object::getClass).orElse(null);
-		if (cause == null)
-			cause = item;
-		return new AssertResult(actual, getExpectedMessage(), message, cause);
 	}
 	
 	/**
