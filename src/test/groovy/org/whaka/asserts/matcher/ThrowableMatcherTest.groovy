@@ -61,7 +61,7 @@ class ThrowableMatcherTest extends Specification {
 			def m1 = ThrowableMatcher.throwableOfType(RuntimeException)
 			def item = new IOException("qwe")
 		when:
-			AssertResult res = m1.matches(item, "msg " + cause, cause)
+			AssertResult res = m1.matches(item, "msg " + cause, cause).get()
 		then:
 			res.getActual() == item?.getClass()
 			res.getExpected() == "instance of ${RuntimeException.class.getCanonicalName()}"

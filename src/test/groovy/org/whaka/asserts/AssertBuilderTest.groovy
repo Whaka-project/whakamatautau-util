@@ -255,7 +255,7 @@ class AssertBuilderTest extends Specification {
 		when:
 			builder.checkThat(42, matcher, "msg", cause)
 		then:
-			1 * matcher.matches(42, "msg", cause) >> null
+			1 * matcher.matches(42, "msg", cause) >> Optional.empty()
 		and:
 			0 * matcher.describeTo(_)
 		and:
@@ -272,7 +272,7 @@ class AssertBuilderTest extends Specification {
 		when:
 			builder.checkThat(42, matcher, "msg", cause)
 		then:
-			1 * matcher.matches(42, "msg", cause) >> result
+			1 * matcher.matches(42, "msg", cause) >> Optional.of(result)
 		and:
 			0 * matcher.describeTo(_)
 		and:

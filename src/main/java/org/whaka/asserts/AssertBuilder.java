@@ -1,7 +1,5 @@
 package org.whaka.asserts;
 
-import static java.util.Optional.*;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -104,16 +102,16 @@ public class AssertBuilder {
 	 * @see #checkThat(Object, Matcher, String)
 	 */
 	public <T> AssertBuilder checkThat(T item, Matcher<T> matcher, String message, Throwable cause) {
-		ofNullable(performCheck(item, matcher, message, cause)).ifPresent(this::addResult);
+		performCheck(item, matcher, message, cause).ifPresent(this::addResult);
 		return this;
 	}
 	
-	private static <T> AssertResult performCheck(T item, Matcher<T> matcher, String message, Throwable cause) {
+	private static <T> Optional<? extends AssertResult> performCheck(T item, Matcher<T> matcher, String message, Throwable cause) {
 		if (matcher instanceof ResultProvidingMatcher)
 			return ((ResultProvidingMatcher<T>)matcher).matches(item, message, cause);
 		if (!matcher.matches(item))
-			return createDefaultResult(item, matcher, message, cause);
-		return null;
+			return Optional.of(createDefaultResult(item, matcher, message, cause));
+		return Optional.empty();
 	}
 	
 	private static <T> AssertResult createDefaultResult(T item, Matcher<T> matcher, String message, Throwable cause) {

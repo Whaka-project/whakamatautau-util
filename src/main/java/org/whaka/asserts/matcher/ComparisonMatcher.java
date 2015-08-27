@@ -1,6 +1,7 @@
 package org.whaka.asserts.matcher;
 
 import java.util.Objects;
+import java.util.Optional;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -37,14 +38,14 @@ public class ComparisonMatcher<T> extends ResultProvidingMatcher<T> {
 	}
 
 	@Override
-	public ComparisonAssertResult matches(T item, String message, Throwable cause) {
+	public Optional<ComparisonAssertResult> matches(T item, String message, Throwable cause) {
 		ComparisonResult comparisonResult = getComparisonPerformer().compare(item, getValue());
 		if (comparisonResult.isSuccess())
-			return null;
+			return Optional.empty();
 		ComparisonAssertResult result = ComparisonAssertResult.createWithCause(comparisonResult, message);
 		if (result.getCause() == null)
 			result.setCause(cause);
-		return result;
+		return Optional.of(result);
 	}
 	
 	@Override
