@@ -25,7 +25,7 @@ public class ReflectiveComparisonPerformer extends AbstractComparisonPerformer<O
 	}
 	
 	@Override
-	public ComparisonResult compare(Object actual, Object expected) {
+	public ComparisonResult appl(Object actual, Object expected) {
 		if (actual == expected)
 			return new ComparisonResult(actual, expected, this, true);
 		if (actual == null || expected == null)
@@ -33,11 +33,11 @@ public class ReflectiveComparisonPerformer extends AbstractComparisonPerformer<O
 		if (actual.getClass() != expected.getClass())
 			return createClassCheckResult(actual, expected);
 		if (isSuitableForDefaultCompare(actual.getClass())) {
-			boolean success = DEEP_EQUALS.compare(actual, expected).isSuccess();
+			boolean success = DEEP_EQUALS.appl(actual, expected).isSuccess();
 			return new ComparisonResult(actual, expected, this, success);
 		}
 		if (actual instanceof Object[] && expected instanceof Object[]) {
-			return ARRAY_DELEGATE.compare((Object[]) actual, (Object[]) expected);
+			return ARRAY_DELEGATE.appl((Object[]) actual, (Object[]) expected);
 		}
 		return performPropertiesComparison(actual, expected);
 	}
@@ -73,6 +73,6 @@ public class ReflectiveComparisonPerformer extends AbstractComparisonPerformer<O
 		} catch (Throwable e) {
 			return new ComparisonFail(actual, expected, this, e);
 		}
-		return compare(actualValue, expectedValue);
+		return appl(actualValue, expectedValue);
 	}
 }

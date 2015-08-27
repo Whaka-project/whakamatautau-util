@@ -2,9 +2,12 @@ package org.whaka.util.reflection.comparison;
 
 import java.util.function.BiPredicate;
 
-public interface ComparisonPerformer<T> {
+/**
+ * Comparison performer represents
+ */
+public interface ComparisonPerformer<T> extends BiPredicate<T, T> {
 
-	ComparisonResult compare(T actual, T expected);
+	ComparisonResult appl(T actual, T expected);
 
 	/**
 	 * Used to identify performer in a result.
@@ -14,7 +17,14 @@ public interface ComparisonPerformer<T> {
 		return "@" + System.identityHashCode(this);
 	}
 	
-	default BiPredicate<T, T> toPredicate() {
-		return (a,b) -> compare(a, b).isSuccess();
+	/**
+	 * May be used in case simple yes/no answer is enough and there's no need for extended {@link ComparisonResult}.
+	 * <b>Note:</b> by default this method just calls {@link #appl(Object, Object)} and checks result for success.
+	 * 
+	 * @see #appl(Object, Object)
+	 */
+	@Override
+	default boolean test(T a, T b) {
+		return appl(a, b).isSuccess();
 	}
 }

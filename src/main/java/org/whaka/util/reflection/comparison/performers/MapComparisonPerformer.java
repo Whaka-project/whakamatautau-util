@@ -36,7 +36,7 @@ public class MapComparisonPerformer<V> extends ContainerComparisonPerformer<V, M
 	}
 
 	@Override
-	public ComparisonResult compare(Map<?, ? extends V> actual, Map<?, ? extends V> expected) {
+	public ComparisonResult appl(Map<?, ? extends V> actual, Map<?, ? extends V> expected) {
 		if (actual == expected)
 			return new ComparisonResult(actual, expected, this, true);
 		if (actual == null || expected == null)
@@ -62,7 +62,7 @@ public class MapComparisonPerformer<V> extends ContainerComparisonPerformer<V, M
 	
 	private ComparisonResult performElementComparison(Map<?, ? extends V> actual, Map<?, ? extends V> expected) {
 		for (Object key : actual.keySet()) {
-			ComparisonResult valueResult = getElementPerformer().compare(actual.get(key), expected.get(key));
+			ComparisonResult valueResult = getElementPerformer().appl(actual.get(key), expected.get(key));
 			if (!valueResult.isSuccess())
 				return createElementsMatchingResult(actual, expected, key, valueResult);
 		}

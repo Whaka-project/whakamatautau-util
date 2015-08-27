@@ -27,25 +27,25 @@ class ArrayComparisonPerformerTest extends Specification {
 			def result = null
 
 		when: "performer is called with two nulls"
-			result = performer.compare(null, null)
+			result = performer.appl(null, null)
 		then: "delegate is not used"
 			0 * delegate._
 		and: "result is successful"
 			checkResult(result, null, null, performer, true)
 
 		when: "one of the arguments is null"
-			result = performer.compare(array, null)
+			result = performer.appl(array, null)
 		then: "delegate is not used"
 			0 * delegate._
 		and: "result is failed"
 			checkResult(result, array, null, performer, false)
 
-		when: result = performer.compare(null, array)
+		when: result = performer.appl(null, array)
 		then: 0 * delegate._
 		and: checkResult(result, null, array, performer, false)
 
 		when: "performer is called with two 'identical' arrays"
-			result = performer.compare(array, array)
+			result = performer.appl(array, array)
 		then: "delegate is not used"
 			0 * delegate._
 		and: "result is successful"
@@ -61,7 +61,7 @@ class ArrayComparisonPerformerTest extends Specification {
 			def result = null
 
 		when: "performer is called with arrays of different size"
-			result = performer.compare(array1, array2)
+			result = performer.appl(array1, array2)
 		then: "delegate is not used"
 			0 * delegate._
 		and: "result is failed"
@@ -87,13 +87,13 @@ class ArrayComparisonPerformerTest extends Specification {
 			ComparisonResult subResult3 = Mock()
 
 		when: "performer is called with two arrays of the same length"
-			def result = performer.compare(array1, array2)
+			def result = performer.appl(array1, array2)
 		then: "delegate is called for each pair of elements in two arrays in order"
-			1 * delegate.compare(1, 2) >> subResult1
+			1 * delegate.appl(1, 2) >> subResult1
 		and:
-			1 * delegate.compare(false, true) >> subResult2
+			1 * delegate.appl(false, true) >> subResult2
 		and:
-			1 * delegate.compare("qwe", "qaz") >> subResult3
+			1 * delegate.appl("qwe", "qaz") >> subResult3
 		and: "final result is complex and contains the same number of sub results as arrays size"
 			checkResult(result, array1, array2, performer, false)
 			result instanceof ComplexComparisonResult
@@ -113,9 +113,9 @@ class ArrayComparisonPerformerTest extends Specification {
 			ComparisonResult subResult = Mock()
 
 		when:
-			def result = performer.compare(array1, array2)
+			def result = performer.appl(array1, array2)
 		then:
-			1 * delegate.compare(_, _) >> subResult
+			1 * delegate.appl(_, _) >> subResult
 		and:
 			result instanceof ComplexComparisonResult
 			def map = result.getPropertyResults()

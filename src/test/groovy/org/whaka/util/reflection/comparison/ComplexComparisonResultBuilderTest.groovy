@@ -84,14 +84,14 @@ class ComplexComparisonResultBuilderTest extends Specification {
 		when: "compare is called with the custom performer"
 			builder.compare("toCharArray2", actualChars, expectedChars, mockPerformer)
 		then: "specified performer is called"
-			1 * mockPerformer.compare(actualChars, expectedChars) >> new ComparisonResult(0, 0, mockPerformer, true)
+			1 * mockPerformer.appl(actualChars, expectedChars) >> new ComparisonResult(0, 0, mockPerformer, true)
 		and: "result returned by the performer is used"
 			builder.getPropertyResults().get(builder.createKey("toCharArray2")).isSuccess()
 
 		when:
 			builder.compare("toCharArray3", actualChars, expectedChars, mockPerformer)
 		then:
-			1 * mockPerformer.compare(actualChars, expectedChars) >> new ComparisonResult(0, 0, mockPerformer, false)
+			1 * mockPerformer.appl(actualChars, expectedChars) >> new ComparisonResult(0, 0, mockPerformer, false)
 		and:
 			builder.getPropertyResults().get(builder.createKey("toCharArray3")).isSuccess() == false
 
