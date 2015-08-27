@@ -17,8 +17,8 @@ class ReflectiveComparisonPerformerTest extends Specification {
 
 	def "INSTANCE - simple objects"() {
 		when:
-			def result1 = INSTANCE.qwerty123456qwerty654321(actual, expected)
-			def result2 = INSTANCE.qwerty123456qwerty654321(expected, actual)
+			def result1 = INSTANCE.apply(actual, expected)
+			def result2 = INSTANCE.apply(expected, actual)
 		then:
 			boolean equals = Objects.deepEquals(actual, expected)
 			checkResult(result1, actual, expected, INSTANCE, equals)
@@ -47,7 +47,7 @@ class ReflectiveComparisonPerformerTest extends Specification {
 		given:
 			ClassPropertyKey key = new ClassPropertyKey("getClass()", Object)
 		when:
-			def result = INSTANCE.qwerty123456qwerty654321(actual, expected)
+			def result = INSTANCE.apply(actual, expected)
 		then:
 			checkResult(result, actual, expected, INSTANCE, false)
 			result instanceof ComplexComparisonResult
@@ -72,14 +72,14 @@ class ReflectiveComparisonPerformerTest extends Specification {
 
 	def "INSTANCE - complex objects"() {
 		when:
-			ComparisonResult result = INSTANCE.qwerty123456qwerty654321(MARTIN, MARTINA)
+			ComparisonResult result = INSTANCE.apply(MARTIN, MARTINA)
 		then:
 			checkMartinMartinaResult(result)
 
 		when:
 			JobPosition positionRacer = new JobPosition("F1 Racer", MARTIN)
 			JobPosition positionSpy = new JobPosition("International Spy", MARTINA)
-			ComparisonResult resultPosition = INSTANCE.qwerty123456qwerty654321(positionRacer, positionSpy)
+			ComparisonResult resultPosition = INSTANCE.apply(positionRacer, positionSpy)
 		then:
 			checkResult(resultPosition, positionRacer, positionSpy, INSTANCE, false)
 			resultPosition instanceof ComplexComparisonResult
@@ -98,7 +98,7 @@ class ReflectiveComparisonPerformerTest extends Specification {
 			Person[] arr1 = [MARTIN, MARTIN, MARTIN]
 			Person[] arr2 = [MARTINA, MARTINA, null]
 		when:
-			ComparisonResult result = INSTANCE.qwerty123456qwerty654321(arr1, arr2)
+			ComparisonResult result = INSTANCE.apply(arr1, arr2)
 		then:
 			checkResult(result, arr1, arr2, INSTANCE.ARRAY_DELEGATE, false)
 		and:

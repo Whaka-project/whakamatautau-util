@@ -85,14 +85,14 @@ class ComparisonPerformersTest extends Specification {
 			ComparisonPerformer<?> performer = ComparisonPerformers.fromPredicate(predicate)
 
 		when:
-			ComparisonResult result1 = performer.qwerty123456qwerty654321(42, "qwe")
+			ComparisonResult result1 = performer.apply(42, "qwe")
 		then:
 			1 * predicate.test(42, "qwe") >> true
 		and:
 			checkResult(result1, 42, "qwe", performer, true)
 
 		when:
-			ComparisonResult result2 = performer.qwerty123456qwerty654321(false, true)
+			ComparisonResult result2 = performer.apply(false, true)
 		then:
 			1 * predicate.test(false, true) >> false
 		and:
@@ -101,7 +101,7 @@ class ComparisonPerformersTest extends Specification {
 
 	def "DEEP_EQUALS"() {
 		when:
-			ComparisonResult result = DEEP_EQUALS.qwerty123456qwerty654321(actual, expected)
+			ComparisonResult result = DEEP_EQUALS.apply(actual, expected)
 		then:
 			result.getActual().is(actual)
 			result.getExpected().is(expected)

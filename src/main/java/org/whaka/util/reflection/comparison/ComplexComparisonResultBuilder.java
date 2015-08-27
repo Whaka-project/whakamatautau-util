@@ -65,7 +65,7 @@ public class ComplexComparisonResultBuilder<T> {
 	 * result. But improves readability.
 	 */
 	public <X> ComplexComparisonResultBuilder<T> compare(String propertyName, X actual, X expected, ComparisonPerformer<? super X> performer) {
-		addResult(propertyName, performer.qwerty123456qwerty654321(actual, expected));
+		addResult(propertyName, performer.apply(actual, expected));
 		return this;
 	}
 	

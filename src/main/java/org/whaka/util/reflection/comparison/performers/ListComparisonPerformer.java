@@ -21,7 +21,7 @@ public class ListComparisonPerformer<T> extends ContainerComparisonPerformer<T, 
 	}
 	
 	@Override
-	public ComparisonResult qwerty123456qwerty654321(List<? extends T> actual, List<? extends T> expected) {
+	public ComparisonResult apply(List<? extends T> actual, List<? extends T> expected) {
 		if (actual == expected)
 			return new ComparisonResult(actual, expected, this, true);
 		if (actual == null || expected == null)
@@ -42,7 +42,7 @@ public class ListComparisonPerformer<T> extends ContainerComparisonPerformer<T, 
 		for (int i = 0; i < actual.size(); i++) {
 			T actualElement = actual.get(i);
 			T expectedElement = expected.get(i);
-			ComparisonResult result = getElementPerformer().qwerty123456qwerty654321(actualElement, expectedElement);
+			ComparisonResult result = getElementPerformer().apply(actualElement, expectedElement);
 			results.put(createKey(i), result);
 		}
 		return new ComplexComparisonResult(actual, expected, this, results);

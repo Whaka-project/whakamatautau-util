@@ -418,16 +418,16 @@ class DynamicComparisonPerformerTest extends Specification {
 			def result = null
 
 		when: "perform comparison is called with two strings "
-			result = performer.qwerty123456qwerty654321("qwe", "qaz")
+			result = performer.apply("qwe", "qaz")
 		then: "call is delegated to registered String delegate with the same arguments"
-			1 * delegateString.qwerty123456qwerty654321("qwe", "qaz") >> finalResult
+			1 * delegateString.apply("qwe", "qaz") >> finalResult
 		and: "object returned from delegate is the result"
 			result.is(finalResult)
 
 		when: "perform comparison is called with two numbers"
-			result = performer.qwerty123456qwerty654321(42, 43)
+			result = performer.apply(42, 43)
 		then: "default delegate is used, for there's no specific delegate is registered for any ancestor of numbers"
-			1 * delegateObject.qwerty123456qwerty654321(42, 43) >> finalResult
+			1 * delegateObject.apply(42, 43) >> finalResult
 		and: "object returned from delegate is the result"
 			result.is(finalResult)
 	}

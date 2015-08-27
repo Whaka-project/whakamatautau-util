@@ -29,7 +29,7 @@ public class PerformerBuildersTestExample {
 		Parent p1 = new ParentImpl(42L, "pop", 36, Arrays.asList(c1, c2), new int[]{1,2,3});
 		Parent p2 = new ParentImpl(42L, "pop", 36, Arrays.asList(c1, c2), new int[]{1,2,3});
 		
-		ComparisonResult result = PARENT_COMPARISON_3.qwerty123456qwerty654321(p1, p2);
+		ComparisonResult result = PARENT_COMPARISON_3.apply(p1, p2);
 		printResult(result);
 	}
 	
@@ -167,7 +167,7 @@ public class PerformerBuildersTestExample {
 			new AbstractComparisonPerformer<PerformerBuildersTestExample.Child>("ChildComparison") {
 				
 				@Override
-				public ComparisonResult qwerty123456qwerty654321(Child actual, Child expected) {
+				public ComparisonResult apply(Child actual, Child expected) {
 					return new ComplexComparisonResultBuilder<>(Child.class)
 							.compare("getId()", actual.getId(), expected.getId())
 							.compare("getName()", actual.getName(), expected.getName())
@@ -180,7 +180,7 @@ public class PerformerBuildersTestExample {
 			new AbstractComparisonPerformer<PerformerBuildersTestExample.Parent>("ParentComparison") {
 		
 				@Override
-				public ComparisonResult qwerty123456qwerty654321(Parent actual, Parent expected) {
+				public ComparisonResult apply(Parent actual, Parent expected) {
 					return new ComplexComparisonResultBuilder<>(Parent.class)
 							.compare("getId()", actual.getId(), expected.getId())
 							.compare("getName()", actual.getName(), expected.getName())
