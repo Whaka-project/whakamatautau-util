@@ -95,7 +95,11 @@ public final class UberMatchers {
 	public static Matcher<Throwable> notExpected() {
 		return ThrowableMatcher.notExpected();
 	}
-
+	
+	/**
+	 * Create a matcher that will check that a collection contains the specified item.
+	 * Specified predicate is used to check elements equality.
+	 */
 	public static <T> Matcher<Collection<? extends T>> hasItem(T item, BiPredicate<T, T> matcher) {
 		Objects.requireNonNull(matcher, "Predicate cannot be null!");
 		return new FunctionalMatcher<Collection<? extends T>>(
