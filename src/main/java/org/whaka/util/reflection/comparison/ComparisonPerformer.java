@@ -1,12 +1,14 @@
 package org.whaka.util.reflection.comparison;
 
+import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
 
 /**
  * Comparison performer represents
  */
-public interface ComparisonPerformer<T> extends BiPredicate<T, T> {
+public interface ComparisonPerformer<T> extends BiFunction<T, T, ComparisonResult>, BiPredicate<T, T> {
 
+	@Override
 	ComparisonResult apply(T actual, T expected);
 
 	/**
