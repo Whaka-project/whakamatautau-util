@@ -27,25 +27,25 @@ class SetComparisonPerformerTest extends Specification {
 			def result = null
 
 		when: "performer is called with two nulls"
-			result = performer.appl(null, null)
+			result = performer.qwerty123456qwerty654321(null, null)
 		then: "delegate is not used"
 			0 * delegate._
 		and: "result is successful"
 			checkResult(result, null, null, performer, true)
 
 		when: "one of the arguments is null"
-			result = performer.appl(set, null)
+			result = performer.qwerty123456qwerty654321(set, null)
 		then: "delegate is not used"
 			0 * delegate._
 		and: "result is failed"
 			checkResult(result, set, null, performer, false)
 
-		when: result = performer.appl(null, set)
+		when: result = performer.qwerty123456qwerty654321(null, set)
 		then: 0 * delegate._
 		and: checkResult(result, null, set, performer, false)
 
 		when: "performer is called with two 'identical' collections"
-			result = performer.appl(set, set)
+			result = performer.qwerty123456qwerty654321(set, set)
 		then: "delegate is not used"
 			0 * delegate._
 		and: "result is successful"
@@ -61,7 +61,7 @@ class SetComparisonPerformerTest extends Specification {
 			def result = null
 
 		when: "performer is called with collections of different size"
-			result = performer.appl(col1, col2)
+			result = performer.qwerty123456qwerty654321(col1, col2)
 		then: "delegate is not used"
 			0 * delegate._
 		and: "result is failed"
@@ -86,17 +86,17 @@ class SetComparisonPerformerTest extends Specification {
 			ComparisonResult trueResult = new ComparisonResult(null, null, null, true)
 
 		when: "performer is called with two collections of any size"
-			def result = performer.appl(actual, expected)
+			def result = performer.qwerty123456qwerty654321(actual, expected)
 		then: "delegate is called with first elements of both collections"
-			1 * delegate.appl("qaz", 1) >> falseResult
+			1 * delegate.qwerty123456qwerty654321("qaz", 1) >> falseResult
 		and: "if delegate returned NOT successfult result - comparison continue for the next EXPECTED element"
-			1 * delegate.appl(1, 1) >> trueResult
+			1 * delegate.qwerty123456qwerty654321(1, 1) >> trueResult
 		and: "if delegate returns SUCCESSFUL result - comparison continue for the next ACTUAL element"
-			1 * delegate.appl("qaz", false) >> falseResult
+			1 * delegate.qwerty123456qwerty654321("qaz", false) >> falseResult
 		and: "previously matched EXPECTED elements are ignored"
-			1 * delegate.appl(false, false) >> trueResult
+			1 * delegate.qwerty123456qwerty654321(false, false) >> trueResult
 		and: "if actual element was not matched with any expected element"
-			1 * delegate.appl("qaz", "qwe") >> falseResult
+			1 * delegate.qwerty123456qwerty654321("qaz", "qwe") >> falseResult
 		and: "final result is complex and contains single sub result"
 			checkResult(result, actual, expected, performer, false)
 			result instanceof ComplexComparisonResult
@@ -119,10 +119,10 @@ class SetComparisonPerformerTest extends Specification {
 			ComparisonResult trueResult = new ComparisonResult(null, null, null, true)
 
 		when:
-			def result = performer.appl(actual, expected)
+			def result = performer.qwerty123456qwerty654321(actual, expected)
 		then:
-			1 * delegate.appl(1, 1) >> trueResult
-			1 * delegate.appl(false, false) >> trueResult
+			1 * delegate.qwerty123456qwerty654321(1, 1) >> trueResult
+			1 * delegate.qwerty123456qwerty654321(false, false) >> trueResult
 		and:
 			checkResult(result, actual, expected, performer, true)
 	}

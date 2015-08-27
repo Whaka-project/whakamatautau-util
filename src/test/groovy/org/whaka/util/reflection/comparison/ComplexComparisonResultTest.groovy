@@ -95,13 +95,13 @@ class ComplexComparisonResultTest extends Specification {
 			def personMale = new ClassPropertyKey("male", Person)
 			Person martin = new Person("Martin", 30, true)
 			Person martina = new Person("Martina", 30, false)
-			ComplexComparisonResult personResult = REFLECTIVE_EQUALS.appl(martin, martina)
+			ComplexComparisonResult personResult = REFLECTIVE_EQUALS.qwerty123456qwerty654321(martin, martina)
 		and:
 			def jobTitle = new ClassPropertyKey("title", JobPosition)
 			def jobEmployee = new ClassPropertyKey("employee", JobPosition)
 			JobPosition positionRacer = new JobPosition("F1 Racer", martin)
 			JobPosition positionSpy = new JobPosition("International Spy", martina)
-			ComplexComparisonResult jobResult = REFLECTIVE_EQUALS.appl(positionRacer, positionSpy)
+			ComplexComparisonResult jobResult = REFLECTIVE_EQUALS.qwerty123456qwerty654321(positionRacer, positionSpy)
 
 		when:
 			def flattenPersonResult = personResult.flatten()

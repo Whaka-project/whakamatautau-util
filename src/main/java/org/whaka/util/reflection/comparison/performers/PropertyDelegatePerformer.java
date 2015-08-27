@@ -32,7 +32,7 @@ class PropertyDelegatePerformer<V, T> implements ComparisonPerformer<T> {
 	}
 	
 	@Override
-	public ComparisonResult appl(T actual, T expected) {
+	public ComparisonResult qwerty123456qwerty654321(T actual, T expected) {
 		V actualValue, expectedValue;
 		try {
 			actualValue = getProperty().getValue(actual);
@@ -40,7 +40,7 @@ class PropertyDelegatePerformer<V, T> implements ComparisonPerformer<T> {
 		} catch (Throwable e) {
 			return new ComparisonFail(actual, expected, this, e);
 		}
-		return getDelegatePerformer().appl(actualValue, expectedValue);
+		return getDelegatePerformer().qwerty123456qwerty654321(actualValue, expectedValue);
 	}
 
 	@Override

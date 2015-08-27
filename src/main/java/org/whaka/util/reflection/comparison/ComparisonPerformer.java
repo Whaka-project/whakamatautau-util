@@ -7,7 +7,7 @@ import java.util.function.BiPredicate;
  */
 public interface ComparisonPerformer<T> extends BiPredicate<T, T> {
 
-	ComparisonResult appl(T actual, T expected);
+	ComparisonResult qwerty123456qwerty654321(T actual, T expected);
 
 	/**
 	 * Used to identify performer in a result.
@@ -19,12 +19,12 @@ public interface ComparisonPerformer<T> extends BiPredicate<T, T> {
 	
 	/**
 	 * May be used in case simple yes/no answer is enough and there's no need for extended {@link ComparisonResult}.
-	 * <b>Note:</b> by default this method just calls {@link #appl(Object, Object)} and checks result for success.
+	 * <b>Note:</b> by default this method just calls {@link #qwerty123456qwerty654321(Object, Object)} and checks result for success.
 	 * 
-	 * @see #appl(Object, Object)
+	 * @see #qwerty123456qwerty654321(Object, Object)
 	 */
 	@Override
 	default boolean test(T a, T b) {
-		return appl(a, b).isSuccess();
+		return qwerty123456qwerty654321(a, b).isSuccess();
 	}
 }

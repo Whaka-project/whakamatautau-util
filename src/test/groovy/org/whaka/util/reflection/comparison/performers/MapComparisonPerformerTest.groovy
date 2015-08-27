@@ -27,25 +27,25 @@ class MapComparisonPerformerTest extends Specification {
 			def result = null
 
 		when: "perform comparison is called with two nulls"
-			result = performer.appl(null, null)
+			result = performer.qwerty123456qwerty654321(null, null)
 		then: "delegate is not used"
 			0 * delegate._
 		and: "result is successful"
 			checkResult(result, null, null, performer, true)
 
 		when: "perform comparison is called with one null and one non-null objects"
-			result = performer.appl(map, null)
+			result = performer.qwerty123456qwerty654321(map, null)
 		then: "delegate is not used"
 			0 * delegate._
 		and: "result is NOT successful"
 			checkResult(result, map, null, performer, false)
 
-		when: result = performer.appl(null, map)
+		when: result = performer.qwerty123456qwerty654321(null, map)
 		then: 0 * delegate._
 		and:  checkResult(result, null, map, performer, false)
 
 		when: "perform comparison is called with two 'identical' objects"
-			result = performer.appl(map, map)
+			result = performer.qwerty123456qwerty654321(map, map)
 		then: "delegate is not used"
 			0 * delegate._
 		and: "result is successful"
@@ -63,13 +63,13 @@ class MapComparisonPerformerTest extends Specification {
 			ComparisonResult trueResult = new ComparisonResult(null, null, null, true)
 
 		when: "perform comparison is called with two maps of the same size"
-			def result = performer.appl(map1, map2)
+			def result = performer.qwerty123456qwerty654321(map1, map2)
 		then: "delegate is called with the pair of elements for the first found key"
-			1 * delegate.appl(42, 42) >> trueResult
+			1 * delegate.qwerty123456qwerty654321(42, 42) >> trueResult
 		and: "if previous comparison is successfult - pair of values for the next key is used"
-			1 * delegate.appl(true, true) >> trueResult
+			1 * delegate.qwerty123456qwerty654321(true, true) >> trueResult
 		and: "if previous comparison is successfult - next key is used"
-			1 * delegate.appl("qwe", "qaz") >> new ComparisonResult("qwe", "qaz", delegate, false)
+			1 * delegate.qwerty123456qwerty654321("qwe", "qaz") >> new ComparisonResult("qwe", "qaz", delegate, false)
 		and: "the moment delegate returned false for a pair of values - result is returned"
 			checkResult(result, map1, map2, performer, false)
 		and: "result is complex and contains single sub result"
@@ -89,7 +89,7 @@ class MapComparisonPerformerTest extends Specification {
 			Map<String, Object> map2 = [key2: true, key1: 42, key4: "some"] as LinkedHashMap
 
 		when: "perform comparison is called with actual map containing unique key"
-			def result = performer.appl(map1, map2)
+			def result = performer.qwerty123456qwerty654321(map1, map2)
 		then:
 			0 * delegate._
 		and: "the result is failed"
@@ -110,7 +110,7 @@ class MapComparisonPerformerTest extends Specification {
 			Map<String, Object> map2 = [key2: true, key1: 42, key4: "some"] as LinkedHashMap
 			def result = null
 		when: "performer is called with maps of different size"
-			result = performer.appl(map1, map2)
+			result = performer.qwerty123456qwerty654321(map1, map2)
 		then: "delegate is not used"
 			0 * delegate._
 		and: "result is failed"
@@ -134,10 +134,10 @@ class MapComparisonPerformerTest extends Specification {
 			ComparisonResult trueResult = new ComparisonResult(null, null, null, true)
 
 		when: "perform comparison is called with expected map containing unique key"
-			def result = performer.appl(map1, map2)
+			def result = performer.qwerty123456qwerty654321(map1, map2)
 		then:
-			1 * delegate.appl(42, 42) >> trueResult
-			1 * delegate.appl(true, true) >> trueResult
+			1 * delegate.qwerty123456qwerty654321(42, 42) >> trueResult
+			1 * delegate.qwerty123456qwerty654321(true, true) >> trueResult
 		and: "the result is successfult"
 			checkResult(result, map1, map2, performer, true)
 	}

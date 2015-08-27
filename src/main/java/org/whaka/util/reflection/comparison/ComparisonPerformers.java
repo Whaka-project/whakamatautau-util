@@ -31,7 +31,7 @@ public class ComparisonPerformers {
 	public static final ComparisonPerformer<Object> DEEP_EQUALS =
 		new AbstractComparisonPerformer<Object>("DeepEquals") {
 			@Override
-			public ComparisonResult appl(Object actual, Object expected) {
+			public ComparisonResult qwerty123456qwerty654321(Object actual, Object expected) {
 				return new ComparisonResult(actual, expected, this, Objects.deepEquals(actual, expected));
 			}
 		};
@@ -42,7 +42,7 @@ public class ComparisonPerformers {
 	public static final ComparisonPerformer<Number> DOUBLE_MATH_EQUALS =
 		new AbstractComparisonPerformer<Number>("DoubleMath") {
 			@Override
-			public ComparisonResult appl(Number actual, Number expected) {
+			public ComparisonResult qwerty123456qwerty654321(Number actual, Number expected) {
 				if (actual == expected)
 					return new ComparisonResult(actual, expected, this, true);
 				if (actual == null || expected == null)
@@ -67,7 +67,7 @@ public class ComparisonPerformers {
 	public static <T> ComparisonPerformer<T> fromPredicate(BiPredicate<T, T> predicate) {
 		return new AbstractComparisonPerformer<T>("PredicateCompare:" + predicate) {
 			@Override
-			public ComparisonResult appl(T actual, T expected) {
+			public ComparisonResult qwerty123456qwerty654321(T actual, T expected) {
 				return new ComparisonResult(actual, expected, this, predicate.test(actual, expected));
 			}
 		};
@@ -133,7 +133,7 @@ public class ComparisonPerformers {
 	public static <T> ComparisonResult safePerform(T actual, T expected, ComparisonPerformer<? super T> performer) {
 		Objects.requireNonNull(performer, "Comparison performer cannot be null!");
 		try {
-			return performer.appl(actual, expected);
+			return performer.qwerty123456qwerty654321(actual, expected);
 		} catch (Throwable e) {
 			return new ComparisonFail(actual, expected, performer, e);
 		}

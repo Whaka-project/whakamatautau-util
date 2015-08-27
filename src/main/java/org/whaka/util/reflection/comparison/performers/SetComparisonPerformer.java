@@ -31,7 +31,7 @@ public class SetComparisonPerformer<T> extends ContainerComparisonPerformer<T, C
 	}
 	
 	@Override
-	public ComparisonResult appl(Collection<? extends T> actual, Collection<? extends T> expected) {
+	public ComparisonResult qwerty123456qwerty654321(Collection<? extends T> actual, Collection<? extends T> expected) {
 		if (actual == expected)
 			return new ComparisonResult(actual, expected, this, true);
 		if (actual == null || expected == null)
@@ -60,7 +60,7 @@ public class SetComparisonPerformer<T> extends ContainerComparisonPerformer<T, C
 	
 	private int findMatchingIndex(T expectedElement, List<T> list) {
 		for (int i = 0; i < list.size(); i++)
-			if (getElementPerformer().appl(list.get(i), expectedElement).isSuccess())
+			if (getElementPerformer().qwerty123456qwerty654321(list.get(i), expectedElement).isSuccess())
 				return i;
 		return -1;
 	}

@@ -14,7 +14,7 @@ import org.whaka.util.reflection.properties.ClassPropertyKey;
  * compared object beforehand. Each performer is mapped by an instance of the {@link ClassPropertyKey} the same way
  * results are mapped in the {@link ComplexComparisonResult}.
  *
- * <p>When {@link #appl(Object, Object)} is called - the same method with the same arguments is called
+ * <p>When {@link #qwerty123456qwerty654321(Object, Object)} is called - the same method with the same arguments is called
  * for each delegate performer. Returned result is stored with the same key performer was stored with. As a result
  * complex comparison result is created.
  */
@@ -36,21 +36,21 @@ public class CompositeComparisonPerformer<T> extends AbstractComparisonPerformer
 	 * You can manipulate it manually.
 	 *
 	 * <p><b>Note:</b> adding null keys or values will cause exception to be thrown
-	 * on {@link #appl(Object, Object)} call!
+	 * on {@link #qwerty123456qwerty654321(Object, Object)} call!
 	 */
 	public Map<ClassPropertyKey, ComparisonPerformer<T>> getPerformers() {
 		return performers;
 	}
 	
 	@Override
-	public ComparisonResult appl(T actual, T expected) {
+	public ComparisonResult qwerty123456qwerty654321(T actual, T expected) {
 		if (actual == expected)
 			return new ComparisonResult(actual, expected, this, true);
 		if (actual == null || expected == null)
 			return new ComparisonResult(actual, expected, this, false);
 		Map<ClassPropertyKey, ComparisonResult> results = new LinkedHashMap<>();
 		for (Map.Entry<ClassPropertyKey, ComparisonPerformer<T>> e : getPerformers().entrySet()) {
-			ComparisonResult result = e.getValue().appl(actual, expected);
+			ComparisonResult result = e.getValue().qwerty123456qwerty654321(actual, expected);
 			results.put(e.getKey(), result);
 		}
 		return new ComplexComparisonResult(actual, expected, this, results);
