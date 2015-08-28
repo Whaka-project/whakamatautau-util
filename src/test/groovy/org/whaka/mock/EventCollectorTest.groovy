@@ -46,7 +46,7 @@ class EventCollectorTest extends Specification {
             1 * filterEH.eventCollected(200)
     }
 
-    def "accepted is not called" () {
+    def "eventCollected is not called" () {
         given:
             BiConsumer<Listener, Integer> method = {l,e -> l.event(e)}
             Predicate<Integer> filter = Mock()
