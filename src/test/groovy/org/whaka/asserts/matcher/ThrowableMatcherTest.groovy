@@ -1,6 +1,7 @@
 package org.whaka.asserts.matcher
 
 import org.whaka.TestData
+import org.whaka.asserts.AssertResult
 
 import spock.lang.Specification
 
@@ -55,12 +56,12 @@ class ThrowableMatcherTest extends Specification {
 			cause << TestData.variousCauses()
 	}
 
-	def "create result"() {
+	def "matches with result"() {
 		given:
 			def m1 = ThrowableMatcher.throwableOfType(RuntimeException)
-			def item = new RuntimeException("qwe")
+			def item = new IOException("qwe")
 		when:
-			def res = m1.createAssertResult(item, "msg " + cause, cause)
+			AssertResult res = m1.matches(item, "msg " + cause, cause).get()
 		then:
 			res.getActual() == item?.getClass()
 			res.getExpected() == "instance of ${RuntimeException.class.getCanonicalName()}"

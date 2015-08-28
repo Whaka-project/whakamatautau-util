@@ -39,7 +39,7 @@ class PropertyDynamicPerformerBuilderTest extends Specification {
 		when: "add property is called with existing property and specific delegate"
 			builder.addProperty(mockProperty, delegatePerformer)
 		then: "delegate is not called immediately"
-			0 * delegatePerformer.compare(_, _)
+			0 * delegatePerformer.apply(_, _)
 		and: "property performers map in the builder has 1 element"
 			builder.getPropertyPerformers().size() == 1
 		and: "map has element with the key from property with PropertyDelegatePerformer as value"
@@ -87,7 +87,7 @@ class PropertyDynamicPerformerBuilderTest extends Specification {
 			builder.addProperty("propName", getterFunction, delegatePerformer)
 		then: "neither function, nor delegate are called immediately"
 			0 * getterFunction.apply(_)
-			0 * delegatePerformer.compare(_, _)
+			0 * delegatePerformer.apply(_, _)
 		and: "property performers map in the builder has 1 element"
 			builder.getPropertyPerformers().size() == 1
 		and: "map has element with the key with specified property name and constructor type"

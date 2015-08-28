@@ -33,9 +33,10 @@ public class ComplexComparisonResultBuilder<T> {
 		return type;
 	}
 	
-	public void setDefaultComparisonPerformer(ComparisonPerformer<Object> defaultComparisonPerformer) {
+	public ComplexComparisonResultBuilder<T> setDefaultComparisonPerformer(ComparisonPerformer<Object> defaultComparisonPerformer) {
 		this.defaultComparisonPerformer = Objects.requireNonNull(defaultComparisonPerformer,
 				"Default comparison performer cannot be null!");
+		return this;
 	}
 	
 	public ComparisonPerformer<Object> getDefaultComparisonPerformer() {
@@ -53,8 +54,8 @@ public class ComplexComparisonResultBuilder<T> {
 	 * @see #getDefaultComparisonPerformer()
 	 * @see #setDefaultComparisonPerformer(ComparisonPerformer)
 	 */
-	public ComplexComparisonResultBuilder<T> compare(String propertyName, Object actual, Object expected) {
-		return compare(propertyName, actual, expected, getDefaultComparisonPerformer());
+	public ComplexComparisonResultBuilder<T> apply(String propertyName, Object actual, Object expected) {
+		return apply(propertyName, actual, expected, getDefaultComparisonPerformer());
 	}
 	
 	/**
@@ -64,8 +65,8 @@ public class ComplexComparisonResultBuilder<T> {
 	 * <p>Equal to performing comparison manually and using {@link #addResult(String, ComparisonResult)} to store
 	 * result. But improves readability.
 	 */
-	public <X> ComplexComparisonResultBuilder<T> compare(String propertyName, X actual, X expected, ComparisonPerformer<? super X> performer) {
-		addResult(propertyName, performer.compare(actual, expected));
+	public <X> ComplexComparisonResultBuilder<T> apply(String propertyName, X actual, X expected, ComparisonPerformer<? super X> performer) {
+		addResult(propertyName, performer.apply(actual, expected));
 		return this;
 	}
 	
