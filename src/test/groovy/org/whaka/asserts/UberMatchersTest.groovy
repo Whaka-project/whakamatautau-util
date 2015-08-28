@@ -1,6 +1,7 @@
 package org.whaka.asserts
 
 import java.util.function.BiPredicate
+import java.util.function.Function
 
 import org.hamcrest.Matcher
 
@@ -173,6 +174,37 @@ class UberMatchersTest extends Specification {
 
 		when: "predicate is null"
 			UberMatchers.isIn([], null)
+		then:
+			thrown(NullPointerException)
+	}
+
+	def "convert"() {
+		given:
+			Matcher<String> stringMatcher = Mock()
+			Function<Integer, String> converter = Mock()
+		and:
+			Matcher<Integer> integerMatcher = UberMatchers.convert(stringMatcher, converter)
+		when:
+			def res = integerMatcher.matches(42)
+		then:
+			1 * converter.apply(42) >> "qwe"
+		and:
+			1 * stringMatcher.matches("qwe") >> result
+		and:
+			res == result
+		where:
+			result << [true, false]
+	}
+
+	def "converting: NPE"() {
+
+		when: "delegate matcher is null"
+			UberMatchers.convert(null, Mock(Function))
+		then:
+			thrown(NullPointerException)
+
+		when: "function is null"
+			UberMatchers.convert(Mock(Matcher), null)
 		then:
 			thrown(NullPointerException)
 	}

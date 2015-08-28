@@ -3,6 +3,7 @@ package org.whaka.asserts;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.function.BiPredicate;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import org.hamcrest.Matcher;
@@ -202,5 +203,20 @@ public final class UberMatchers {
 				Object.class,
 				t -> UberCollections.contains(col, t, matcher),
 				d -> d.appendText("one of ").appendValue(col).appendText(" with a predicate"));
+	}
+	
+	/**
+	 * Create a matcher that will apply specified function to the received value and then delegate result
+	 * to the specified matcher delegate.
+	 * 
+	 * @throws NullPointerException if specified matcher or function is <code>null</code>
+	 */
+	public static <T, V> Matcher<V> convert(Matcher<T> m, Function<V, T> f) {
+		Objects.requireNonNull(m, "Delegate matcher cannot be null!");
+		Objects.requireNonNull(f, "Converting function cannot be null!");
+		return new FunctionalMatcher<V>(
+				Object.class,
+				v -> m.matches(f.apply(v)),
+				d -> m.describeTo(d));
 	}
 }
