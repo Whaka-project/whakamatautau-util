@@ -1,13 +1,19 @@
 package org.whaka.asserts;
 
+import java.util.Collection;
+import java.util.Objects;
+import java.util.function.BiPredicate;
 import java.util.regex.Pattern;
 
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.whaka.asserts.matcher.ComparisonMatcher;
 import org.whaka.asserts.matcher.ConsistencyMatcher;
+import org.whaka.asserts.matcher.FunctionalMatcher;
 import org.whaka.asserts.matcher.RegexpMatcher;
 import org.whaka.asserts.matcher.ThrowableMatcher;
+import org.whaka.util.UberCollections;
+import org.whaka.util.reflection.UberClasses;
 import org.whaka.util.reflection.comparison.ComparisonPerformer;
 import org.whaka.util.reflection.comparison.ComparisonPerformers;
 
@@ -130,5 +136,17 @@ public final class UberMatchers {
 	 */
 	public static Matcher<Throwable> notExpected() {
 		return ThrowableMatcher.notExpected();
+	}
+	
+	/**
+	 * Create a matcher that will check that a collection contains the specified item.
+	 * Specified predicate is used to check elements equality.
+	 */
+	public static <T> Matcher<Collection<? extends T>> hasItem(T item, BiPredicate<T, T> matcher) {
+		Objects.requireNonNull(matcher, "Predicate cannot be null!");
+		return new FunctionalMatcher<Collection<? extends T>>(
+				UberClasses.cast(Collection.class),
+				c -> UberCollections.contains(c, item, matcher),
+				d -> d.appendText("has item ").appendValue(item).appendText(" with a predicate"));
 	}
 }
