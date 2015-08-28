@@ -17,7 +17,7 @@ import org.whaka.util.reflection.comparison.ComparisonResult;
 /**
  * <p>This performer allows you to register delegates that will be dynamically selected at the moment of execution.
  * 
- * <p>All registered delegates are mapped by a class. When {@link #compare(Object, Object)} is called -
+ * <p>All registered delegates are mapped by a class. When {@link #apply(Object, Object)} is called -
  * {@link #getDelegate(Object, Object)} is called and result delegate is used to perform actual comparison;
  */
 public class DynamicComparisonPerformer extends AbstractComparisonPerformer<Object> {
@@ -294,8 +294,8 @@ public class DynamicComparisonPerformer extends AbstractComparisonPerformer<Obje
 	
 	@Override
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public ComparisonResult compare(Object actual, Object expected) {
+	public ComparisonResult apply(Object actual, Object expected) {
 		ComparisonPerformer delegate = getDelegate(actual, expected);
-		return delegate.compare(actual, expected);
+		return delegate.apply(actual, expected);
 	}
 }

@@ -20,7 +20,7 @@ public class ArrayComparisonPerformer<T> extends ContainerComparisonPerformer<T,
 	}
 	
 	@Override
-	public ComparisonResult compare(T[] actual, T[] expected) {
+	public ComparisonResult apply(T[] actual, T[] expected) {
 		if (actual == expected)
 			return new ComparisonResult(actual, expected, this, true);
 		if (actual == null || expected == null)
@@ -32,7 +32,7 @@ public class ArrayComparisonPerformer<T> extends ContainerComparisonPerformer<T,
 	
 	private ComparisonResult createLengthCheckResult(T[] actual, T[] expected) {
 		return new ComplexComparisonResultBuilder<T[]>(Object[].class)
-				.compare("length", actual.length, expected.length)
+				.apply("length", actual.length, expected.length)
 				.build(actual, expected, this);
 	}
 	
@@ -41,7 +41,7 @@ public class ArrayComparisonPerformer<T> extends ContainerComparisonPerformer<T,
 		for (int i = 0; i < actual.length; i++) {
 			T actualElement = actual[i];
 			T expectedElement = expected[i];
-			ComparisonResult result = getElementPerformer().compare(actualElement, expectedElement);
+			ComparisonResult result = getElementPerformer().apply(actualElement, expectedElement);
 			results.put(createKey(i), result);
 		}
 		return new ComplexComparisonResult(actual, expected, this, results);

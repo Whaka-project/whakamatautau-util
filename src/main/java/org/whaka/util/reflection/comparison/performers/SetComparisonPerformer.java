@@ -31,7 +31,7 @@ public class SetComparisonPerformer<T> extends ContainerComparisonPerformer<T, C
 	}
 	
 	@Override
-	public ComparisonResult compare(Collection<? extends T> actual, Collection<? extends T> expected) {
+	public ComparisonResult apply(Collection<? extends T> actual, Collection<? extends T> expected) {
 		if (actual == expected)
 			return new ComparisonResult(actual, expected, this, true);
 		if (actual == null || expected == null)
@@ -43,7 +43,7 @@ public class SetComparisonPerformer<T> extends ContainerComparisonPerformer<T, C
 	
 	private ComparisonResult createSizeCheckResult(Collection<? extends T> actual, Collection<? extends T> expected) {
 		return new ComplexComparisonResultBuilder<Collection<? extends T>>(Collection.class)
-				.compare("size", actual.size(), expected.size())
+				.apply("size", actual.size(), expected.size())
 				.build(actual, expected, this);
 	}
 	
@@ -60,7 +60,7 @@ public class SetComparisonPerformer<T> extends ContainerComparisonPerformer<T, C
 	
 	private int findMatchingIndex(T expectedElement, List<T> list) {
 		for (int i = 0; i < list.size(); i++)
-			if (getElementPerformer().compare(list.get(i), expectedElement).isSuccess())
+			if (getElementPerformer().apply(list.get(i), expectedElement).isSuccess())
 				return i;
 		return -1;
 	}

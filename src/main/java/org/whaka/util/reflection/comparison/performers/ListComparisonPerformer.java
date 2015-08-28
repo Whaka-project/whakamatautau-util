@@ -21,7 +21,7 @@ public class ListComparisonPerformer<T> extends ContainerComparisonPerformer<T, 
 	}
 	
 	@Override
-	public ComparisonResult compare(List<? extends T> actual, List<? extends T> expected) {
+	public ComparisonResult apply(List<? extends T> actual, List<? extends T> expected) {
 		if (actual == expected)
 			return new ComparisonResult(actual, expected, this, true);
 		if (actual == null || expected == null)
@@ -33,7 +33,7 @@ public class ListComparisonPerformer<T> extends ContainerComparisonPerformer<T, 
 	
 	private ComparisonResult createSizeCheckResult(List<? extends T> actual, List<? extends T> expected) {
 		return new ComplexComparisonResultBuilder<List<? extends T>>(List.class)
-				.compare("size", actual.size(), expected.size())
+				.apply("size", actual.size(), expected.size())
 				.build(actual, expected, this);
 	}
 	
@@ -42,7 +42,7 @@ public class ListComparisonPerformer<T> extends ContainerComparisonPerformer<T, 
 		for (int i = 0; i < actual.size(); i++) {
 			T actualElement = actual.get(i);
 			T expectedElement = expected.get(i);
-			ComparisonResult result = getElementPerformer().compare(actualElement, expectedElement);
+			ComparisonResult result = getElementPerformer().apply(actualElement, expectedElement);
 			results.put(createKey(i), result);
 		}
 		return new ComplexComparisonResult(actual, expected, this, results);

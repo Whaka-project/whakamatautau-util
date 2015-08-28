@@ -29,7 +29,7 @@ public class PerformerBuildersTestExample {
 		Parent p1 = new ParentImpl(42L, "pop", 36, Arrays.asList(c1, c2), new int[]{1,2,3});
 		Parent p2 = new ParentImpl(42L, "pop", 36, Arrays.asList(c1, c2), new int[]{1,2,3});
 		
-		ComparisonResult result = PARENT_COMPARISON_3.compare(p1, p2);
+		ComparisonResult result = PARENT_COMPARISON_3.apply(p1, p2);
 		printResult(result);
 	}
 	
@@ -167,11 +167,11 @@ public class PerformerBuildersTestExample {
 			new AbstractComparisonPerformer<PerformerBuildersTestExample.Child>("ChildComparison") {
 				
 				@Override
-				public ComparisonResult compare(Child actual, Child expected) {
+				public ComparisonResult apply(Child actual, Child expected) {
 					return new ComplexComparisonResultBuilder<>(Child.class)
-							.compare("getId()", actual.getId(), expected.getId())
-							.compare("getName()", actual.getName(), expected.getName())
-							.compare("isBoy()", actual.isBoy(), expected.isBoy())
+							.apply("getId()", actual.getId(), expected.getId())
+							.apply("getName()", actual.getName(), expected.getName())
+							.apply("isBoy()", actual.isBoy(), expected.isBoy())
 							.build(actual, expected, this);
 				}
 			};
@@ -180,13 +180,13 @@ public class PerformerBuildersTestExample {
 			new AbstractComparisonPerformer<PerformerBuildersTestExample.Parent>("ParentComparison") {
 		
 				@Override
-				public ComparisonResult compare(Parent actual, Parent expected) {
+				public ComparisonResult apply(Parent actual, Parent expected) {
 					return new ComplexComparisonResultBuilder<>(Parent.class)
-							.compare("getId()", actual.getId(), expected.getId())
-							.compare("getName()", actual.getName(), expected.getName())
-							.compare("getAge()", actual.getAge(), expected.getAge())
-							.compare("getArr()", actual.getArr(), expected.getArr())
-							.compare("getChild()", actual.getChild(), expected.getChild(), ComparisonPerformers.list(CHILD_COMPARISON))
+							.apply("getId()", actual.getId(), expected.getId())
+							.apply("getName()", actual.getName(), expected.getName())
+							.apply("getAge()", actual.getAge(), expected.getAge())
+							.apply("getArr()", actual.getArr(), expected.getArr())
+							.apply("getChild()", actual.getChild(), expected.getChild(), ComparisonPerformers.list(CHILD_COMPARISON))
 							.build(actual, expected, this);
 				}
 			};

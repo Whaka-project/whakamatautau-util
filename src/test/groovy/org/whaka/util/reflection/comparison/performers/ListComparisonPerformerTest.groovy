@@ -27,25 +27,25 @@ class ListComparisonPerformerTest extends Specification {
 			def result = null
 
 		when: "performer is called with two nulls"
-			result = performer.compare(null, null)
+			result = performer.apply(null, null)
 		then: "delegate is not used"
 			0 * delegate._
 		and: "result is successful"
 			checkResult(result, null, null, performer, true)
 
 		when: "one of the arguments is null"
-			result = performer.compare(list, null)
+			result = performer.apply(list, null)
 		then: "delegate is not used"
 			0 * delegate._
 		and: "result is failed"
 			checkResult(result, list, null, performer, false)
 
-		when: result = performer.compare(null, list)
+		when: result = performer.apply(null, list)
 		then: 0 * delegate._
 		and: checkResult(result, null, list, performer, false)
 
 		when: "performer is called with two 'identical' lists"
-			result = performer.compare(list, list)
+			result = performer.apply(list, list)
 		then: "delegate is not used"
 			0 * delegate._
 		and: "result is successful"
@@ -61,7 +61,7 @@ class ListComparisonPerformerTest extends Specification {
 			def result = null
 
 		when: "performer is called with lists of different size"
-			result = performer.compare(list1, list2)
+			result = performer.apply(list1, list2)
 		then: "delegate is not used"
 			0 * delegate._
 		and: "result is failed"
@@ -87,13 +87,13 @@ class ListComparisonPerformerTest extends Specification {
 			ComparisonResult subResult3 = Mock()
 
 		when: "performer is called with two lists of the same length"
-			def result = performer.compare(array1, array2)
+			def result = performer.apply(array1, array2)
 		then: "delegate is called for each pair of elements in two lists in order"
-			1 * delegate.compare(1, 2) >> subResult1
+			1 * delegate.apply(1, 2) >> subResult1
 		and:
-			1 * delegate.compare(false, true) >> subResult2
+			1 * delegate.apply(false, true) >> subResult2
 		and:
-			1 * delegate.compare("qwe", "qaz") >> subResult3
+			1 * delegate.apply("qwe", "qaz") >> subResult3
 		and: "final result is complex and contains the same number of sub results as lists size"
 			checkResult(result, array1, array2, performer, false)
 			result instanceof ComplexComparisonResult

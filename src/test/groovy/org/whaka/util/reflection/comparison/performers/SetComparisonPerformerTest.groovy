@@ -27,25 +27,25 @@ class SetComparisonPerformerTest extends Specification {
 			def result = null
 
 		when: "performer is called with two nulls"
-			result = performer.compare(null, null)
+			result = performer.apply(null, null)
 		then: "delegate is not used"
 			0 * delegate._
 		and: "result is successful"
 			checkResult(result, null, null, performer, true)
 
 		when: "one of the arguments is null"
-			result = performer.compare(set, null)
+			result = performer.apply(set, null)
 		then: "delegate is not used"
 			0 * delegate._
 		and: "result is failed"
 			checkResult(result, set, null, performer, false)
 
-		when: result = performer.compare(null, set)
+		when: result = performer.apply(null, set)
 		then: 0 * delegate._
 		and: checkResult(result, null, set, performer, false)
 
 		when: "performer is called with two 'identical' collections"
-			result = performer.compare(set, set)
+			result = performer.apply(set, set)
 		then: "delegate is not used"
 			0 * delegate._
 		and: "result is successful"
@@ -61,7 +61,7 @@ class SetComparisonPerformerTest extends Specification {
 			def result = null
 
 		when: "performer is called with collections of different size"
-			result = performer.compare(col1, col2)
+			result = performer.apply(col1, col2)
 		then: "delegate is not used"
 			0 * delegate._
 		and: "result is failed"
@@ -86,17 +86,17 @@ class SetComparisonPerformerTest extends Specification {
 			ComparisonResult trueResult = new ComparisonResult(null, null, null, true)
 
 		when: "performer is called with two collections of any size"
-			def result = performer.compare(actual, expected)
+			def result = performer.apply(actual, expected)
 		then: "delegate is called with first elements of both collections"
-			1 * delegate.compare("qaz", 1) >> falseResult
+			1 * delegate.apply("qaz", 1) >> falseResult
 		and: "if delegate returned NOT successfult result - comparison continue for the next EXPECTED element"
-			1 * delegate.compare(1, 1) >> trueResult
+			1 * delegate.apply(1, 1) >> trueResult
 		and: "if delegate returns SUCCESSFUL result - comparison continue for the next ACTUAL element"
-			1 * delegate.compare("qaz", false) >> falseResult
+			1 * delegate.apply("qaz", false) >> falseResult
 		and: "previously matched EXPECTED elements are ignored"
-			1 * delegate.compare(false, false) >> trueResult
+			1 * delegate.apply(false, false) >> trueResult
 		and: "if actual element was not matched with any expected element"
-			1 * delegate.compare("qaz", "qwe") >> falseResult
+			1 * delegate.apply("qaz", "qwe") >> falseResult
 		and: "final result is complex and contains single sub result"
 			checkResult(result, actual, expected, performer, false)
 			result instanceof ComplexComparisonResult
@@ -119,10 +119,10 @@ class SetComparisonPerformerTest extends Specification {
 			ComparisonResult trueResult = new ComparisonResult(null, null, null, true)
 
 		when:
-			def result = performer.compare(actual, expected)
+			def result = performer.apply(actual, expected)
 		then:
-			1 * delegate.compare(1, 1) >> trueResult
-			1 * delegate.compare(false, false) >> trueResult
+			1 * delegate.apply(1, 1) >> trueResult
+			1 * delegate.apply(false, false) >> trueResult
 		and:
 			checkResult(result, actual, expected, performer, true)
 	}

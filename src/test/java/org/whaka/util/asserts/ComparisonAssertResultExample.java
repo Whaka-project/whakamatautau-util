@@ -29,16 +29,16 @@ public class ComparisonAssertResultExample {
 				.configureDynamicPerformer(p -> p.registerDelegate(Person.class, personPerformer))
 				.build("JobComparison");
 		
-		ComparisonResult customResult = jobPerformer.compare(racer, spy);
+		ComparisonResult customResult = jobPerformer.apply(racer, spy);
 		ComparisonAssertResult customAssert = ComparisonAssertResult.createWithCause(customResult);
 		
-		ComparisonResult reflectiveResult = ComparisonPerformers.REFLECTIVE_EQUALS.compare(racer, spy);
+		ComparisonResult reflectiveResult = ComparisonPerformers.REFLECTIVE_EQUALS.apply(racer, spy);
 		ComparisonAssertResult reflectiveAssert = ComparisonAssertResult.createWithCause(reflectiveResult);
 		
-		ComparisonResult basicResult = ComparisonPerformers.DEEP_EQUALS.compare(racer, spy);
+		ComparisonResult basicResult = ComparisonPerformers.DEEP_EQUALS.apply(racer, spy);
 		ComparisonAssertResult basicAssert = ComparisonAssertResult.createWithCause(basicResult);
 		
-		ComparisonResult numberResult = ComparisonPerformers.DOUBLE_MATH_EQUALS.compare(BigDecimal.TEN, BigInteger.ONE);
+		ComparisonResult numberResult = ComparisonPerformers.DOUBLE_MATH_EQUALS.apply(BigDecimal.TEN, BigInteger.ONE);
 		ComparisonAssertResult numberAssert = ComparisonAssertResult.createWithCause(numberResult);
 
 		AssertError error = new AssertError(Arrays.asList(customAssert, reflectiveAssert, basicAssert, numberAssert));
