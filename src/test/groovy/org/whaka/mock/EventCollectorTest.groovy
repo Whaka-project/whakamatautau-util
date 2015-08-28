@@ -10,72 +10,77 @@ import java.util.function.Predicate
  */
 class EventCollectorTest extends Specification {
 
-    private BiConsumer<Listener, Integer> method = {l,e -> l.event(e)}
-    private Predicate<Integer> filter = Mock()
-    private EventCollector.EventHandler<Integer> filterEH = Mock()
-    private EventCollector<Listener, Integer> collector = EventCollector.create(Listener.class, method, filter, filterEH)
-    private Listener l = collector.getTarget()
-
     def "all filters are called" () {
+        given:
+            BiConsumer<Listener, Integer> method = {l,e -> l.event(e)}
+            Predicate<Integer> filter = Mock()
+            EventCollector.EventHandler<Integer> filterEH = Mock()
+            EventCollector<Listener, Integer> collector = EventCollector.create(Listener.class, method, filter, filterEH)
+            Listener l = collector.getTarget()
         when:
-            l.event(event)
-            l.event(event * 2)
+            l.event(100)
+            l.event(200)
         then:
-            1 * filter.test(event) >> true
-            1 * filterEH.test(event) >> true
+            1 * filter.test(100) >> true
+            1 * filterEH.test(100) >> true
         and:
-            1 * filter.test(event * 2) >> false
-            1 * filterEH.test(event * 2) >> false
-        where:
-            event << 100
+            1 * filter.test(200) >> false
+            1 * filterEH.test(200) >> false
     }
 
-    def "accepted is called" () {
+    def "eventCollected is called" () {
+        given:
+            BiConsumer<Listener, Integer> method = {l,e -> l.event(e)}
+            Predicate<Integer> filter = Mock()
+            EventCollector.EventHandler<Integer> filterEH = Mock()
+            EventCollector<Listener, Integer> collector = EventCollector.create(Listener.class, method, filter, filterEH)
+            Listener l = collector.getTarget()
         when:
-            l.event(event)
-            l.event(event * 2)
+            l.event(100)
+            l.event(200)
         then:
-            1 * filter.test(event) >> true
-            1 * filterEH.test(event) >> true
+            2 * filter.test(_) >> true
+            2 * filterEH.test(_) >> true
         and:
-            1 * filterEH.eventCollected(event)
+            1 * filterEH.eventCollected(100)
+            1 * filterEH.eventCollected(200)
+    }
 
-        and:
-            1 * filter.test(event * 2) >> false
-            1 * filterEH.test(event * 2) >> true
+    def "accepted is not called" () {
+        given:
+            BiConsumer<Listener, Integer> method = {l,e -> l.event(e)}
+            Predicate<Integer> filter = Mock()
+            EventCollector.EventHandler<Integer> filterEH = Mock()
+            EventCollector<Listener, Integer> collector = EventCollector.create(Listener.class, method, filter, filterEH)
+            Listener l = collector.getTarget()
+        when:
+            l.event(100)
+            l.event(200)
+        then:
+            2 * filter.test(_) >> false
+            2 * filterEH.test(_) >> true
         and:
             0 * filterEH.eventCollected(_)
-
-        where:
-            event << 100
     }
 
     def "events are collected" (){
+        given:
+            BiConsumer<Listener, Integer> method = {l,e -> l.event(e)}
+            Predicate<Integer> filter = Mock()
+            EventCollector.EventHandler<Integer> filterEH = Mock()
+            EventCollector<Listener, Integer> collector = EventCollector.create(Listener.class, method, filter, filterEH)
+            Listener l = collector.getTarget()
         when:
-            l.event(event)
-            l.event(event * 2)
-            l.event(event * 3)
+            l.event(100)
+            l.event(200)
+            l.event(300)
         then:
-            1 * filter.test(event) >> true
-            1 * filterEH.test(event) >> true
-        and:
-            collector.events.contains(event)
-
-        and:
-            1 * filter.test(event * 2) >> false
-            1 * filterEH.test(event * 2) >> true
-        and:
-            !collector.events.contains(event * 2)
-
-        and:
-            1 * filter.test(event * 3) >> true
-            1 * filterEH.test(event * 3) >> true
+            1 * filter.test(200) >> false
+            2 * filter.test(_) >> true
+            3 * filterEH.test(_) >> true
         and:
             collector.events.size() == 2
-            collector.events.contains(event * 3)
-
-        where:
-            event << 100
+            collector.events.containsAll([100, 300])
     }
 
     private interface Listener {
