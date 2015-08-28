@@ -16,5 +16,8 @@ We couldn't find existing implementations of tools like multiple-assert, interfa
 ## Kanban
 https://waffle.io/Whaka-project/whakamatautau-util/join
 
+## CI
+https://travis-ci.org/Whaka-project/whakamatautau-util/pull_requests
+
 ## Whakamātautau ki te mate!
 <img src="http://i.imgur.com/CEAYRqW.jpg" width="400" alt="Whaka!">
