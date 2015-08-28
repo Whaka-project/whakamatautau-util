@@ -13,6 +13,8 @@ import org.whaka.asserts.matcher.RegexpMatcher;
 import org.whaka.asserts.matcher.ThrowableMatcher;
 import org.whaka.util.UberCollections;
 
+import com.google.common.base.Preconditions;
+
 
 /**
  * Class provides static factory methods for custom Hamcrest matchers provided by the librabry.
@@ -109,6 +111,40 @@ public final class UberMatchers {
 				Collection.class,
 				c -> UberCollections.contains(c, item, matcher),
 				d -> d.appendText("has item ").appendValue(item).appendText(" with a predicate"));
+	}
+	
+	/**
+	 * Equal to {@link #hasAnyItem(Collection, BiPredicate)} with {@link Objects#deepEquals(Object, Object)}
+	 * used as a predicate.
+	 * 
+	 * <p><b>Note:</b> matcher will throw an NPE if matched against a <code>null</code> value!
+	 * 
+	 * @throws NullPointerException if specified collection is <code>null</code>
+	 * @throws IllegalArgumentException if specified collection is <code>empty</code>
+	 */
+	public static <T> Matcher<Collection<? extends T>> hasAnyItem(Collection<T> items) {
+		return hasAnyItem(items, Objects::deepEquals);
+	}
+	
+	/**
+	 * <p>Create a matcher that will check that a collection contains any one of the specified item.
+	 * Specified predicate is used to check elements equality.
+	 * 
+	 * <p><b>Note:</b> matcher will throw an NPE if matched against a <code>null</code> value!
+	 * 
+	 * @throws NullPointerException if specified collection or specified predicate is <code>null</code>
+	 * @throws IllegalArgumentException if specified collection is <code>empty</code>
+	 * 
+	 * @see #hasAnyItem(Collection)
+	 */
+	public static <T> Matcher<Collection<? extends T>> hasAnyItem(Collection<T> items, BiPredicate<T, T> matcher) {
+		Objects.requireNonNull(items, "Items collection cannot be null!");
+		Objects.requireNonNull(matcher, "Predicate cannot be null!");
+		Preconditions.checkArgument(!items.isEmpty(), "Items cannot be empty!");
+		return new FunctionalMatcher<Collection<? extends T>>(
+				Collection.class,
+				c -> UberCollections.containsAny(c, items, matcher),
+				d -> d.appendText("has any one of ").appendValue(items).appendText(" with a predicate"));
 	}
 
 	/**

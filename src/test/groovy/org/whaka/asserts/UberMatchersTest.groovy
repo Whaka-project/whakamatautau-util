@@ -65,6 +65,67 @@ class UberMatchersTest extends Specification {
 			thrown(NullPointerException)
 	}
 
+	def "hasAnyItem with predicate: basics"() {
+		given:
+			BiPredicate predicate = Mock()
+			Matcher m = UberMatchers.hasAnyItem(["it1", "it2"], predicate)
+			List<String> values = ["qwe", "rty", "qaz"]
+		when:
+			def res = m.matches(values)
+		then: 1 * predicate.test("qwe", "it1") >> false
+		and:  1 * predicate.test("rty", "it1") >> false
+		and:  1 * predicate.test("qaz", "it1") >> false
+		and:  1 * predicate.test("qwe", "it2") >> false
+		and:  1 * predicate.test("rty", "it2") >> true
+		and:
+			0 * predicate.test(_, _)
+		and:
+			res == true
+	}
+
+	def "hasAnyItem with predicate: examples"() {
+		given:
+			Matcher m = UberMatchers.hasAnyItem(items, predicate)
+		expect:
+			m.matches(values as List) == result
+		where:
+			values				|	items				|	predicate				||	result
+			[]					|	[3,4]				|	Objects.&equals			||	false
+			[]					|	[3,4]				|	{a,b -> true}			||	false
+			[1,2]				|	[3,4]				|	Objects.&equals			||	false
+			[1,2]				|	[3,4]				|	{a,b -> true}			||	true
+			[1,2,3]				|	[3,4]				|	Objects.&equals			||	true
+			[1,2,3]				|	[3,4]				|	{a,b -> false}			||	false
+			[]					|	[null]				|	Objects.&equals			||	false
+			[null]				|	[null]				|	Objects.&equals			||	true
+			[null, null]		|	[1,null]			|	Objects.&equals			||	true
+			[arr(1,2),arr(3,4)]	|	[arr(5,6),arr(1,2)]	|	Objects.&equals			||	false
+			[arr(1,2),arr(3,4)]	|	[arr(5,6),arr(1,2)]	|	Objects.&deepEquals		||	true
+	}
+
+	def "hasAnyItem with predicate: errors"() {
+
+		when: "items collection is null, but predicate is valid"
+			UberMatchers.hasAnyItem(null, Mock(BiPredicate))
+		then:
+			thrown(NullPointerException)
+
+		when: "items collection is empty"
+			UberMatchers.hasAnyItem([], Mock(BiPredicate))
+		then:
+			thrown(IllegalArgumentException)
+
+		when: "predicate is null"
+			UberMatchers.hasItem([42], null)
+		then:
+			thrown(NullPointerException)
+
+		when: "properly created matcher is called upon null value as a collection"
+			UberMatchers.hasItem([42], {a,b->true}).matches(null as Collection)
+		then:
+			thrown(NullPointerException)
+	}
+
 	def "isIn with predicate: basics"() {
 		given:
 			BiPredicate predicate = Mock()
