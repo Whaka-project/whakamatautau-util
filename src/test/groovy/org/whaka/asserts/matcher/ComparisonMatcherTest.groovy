@@ -16,7 +16,7 @@ class ComparisonMatcherTest extends Specification {
 		when:
 			def m = new ComparisonMatcher(value, performer)
 		then:
-			0 * performer.compare(_, _)
+			0 * performer.apply(_, _)
 		and:
 			m.getValue().is(value)
 			m.getComparisonPerformer().is(performer)
@@ -32,7 +32,7 @@ class ComparisonMatcherTest extends Specification {
 		when:
 			ComparisonAssertResult res = m.matches("item", "msg " + cause, cause).orElse(null)
 		then:
-			1 * performer.compare("item", "value") >> comparisonResult
+			1 * performer.apply("item", "value") >> comparisonResult
 		and:
 			res == null
 		where:
@@ -47,7 +47,7 @@ class ComparisonMatcherTest extends Specification {
 		when:
 			ComparisonAssertResult res = m.matches("item", "msg " + cause, cause).get()
 		then:
-			1 * performer.compare("item", "value") >> comparisonResult
+			1 * performer.apply("item", "value") >> comparisonResult
 		and:
 			res.getComparisonResult().is(comparisonResult)
 			res.getActual() == "item"
@@ -67,7 +67,7 @@ class ComparisonMatcherTest extends Specification {
 		when:
 			ComparisonAssertResult res = m.matches("item", "msg " + cause, cause).get()
 		then:
-			1 * performer.compare("item", "value") >> comparisonResult
+			1 * performer.apply("item", "value") >> comparisonResult
 		and:
 			res.getComparisonResult().is(comparisonResult)
 			res.getMessage() == "msg $cause"
