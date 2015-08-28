@@ -169,9 +169,9 @@ public class PerformerBuildersTestExample {
 				@Override
 				public ComparisonResult apply(Child actual, Child expected) {
 					return new ComplexComparisonResultBuilder<>(Child.class)
-							.compare("getId()", actual.getId(), expected.getId())
-							.compare("getName()", actual.getName(), expected.getName())
-							.compare("isBoy()", actual.isBoy(), expected.isBoy())
+							.apply("getId()", actual.getId(), expected.getId())
+							.apply("getName()", actual.getName(), expected.getName())
+							.apply("isBoy()", actual.isBoy(), expected.isBoy())
 							.build(actual, expected, this);
 				}
 			};
@@ -182,11 +182,11 @@ public class PerformerBuildersTestExample {
 				@Override
 				public ComparisonResult apply(Parent actual, Parent expected) {
 					return new ComplexComparisonResultBuilder<>(Parent.class)
-							.compare("getId()", actual.getId(), expected.getId())
-							.compare("getName()", actual.getName(), expected.getName())
-							.compare("getAge()", actual.getAge(), expected.getAge())
-							.compare("getArr()", actual.getArr(), expected.getArr())
-							.compare("getChild()", actual.getChild(), expected.getChild(), ComparisonPerformers.list(CHILD_COMPARISON))
+							.apply("getId()", actual.getId(), expected.getId())
+							.apply("getName()", actual.getName(), expected.getName())
+							.apply("getAge()", actual.getAge(), expected.getAge())
+							.apply("getArr()", actual.getArr(), expected.getArr())
+							.apply("getChild()", actual.getChild(), expected.getChild(), ComparisonPerformers.list(CHILD_COMPARISON))
 							.build(actual, expected, this);
 				}
 			};

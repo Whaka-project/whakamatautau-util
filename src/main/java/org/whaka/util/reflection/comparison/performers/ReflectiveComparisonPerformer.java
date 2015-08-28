@@ -44,7 +44,7 @@ public class ReflectiveComparisonPerformer extends AbstractComparisonPerformer<O
 	
 	private ComparisonResult createClassCheckResult(Object actual, Object expected) {
 		return new ComplexComparisonResultBuilder<>(Object.class)
-				.compare("getClass()", actual.getClass(), expected.getClass(), this)
+				.apply("getClass()", actual.getClass(), expected.getClass(), this)
 				.build(actual, expected, this);
 	}
 	

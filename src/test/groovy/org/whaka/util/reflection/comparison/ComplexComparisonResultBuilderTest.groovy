@@ -51,7 +51,7 @@ class ComplexComparisonResultBuilderTest extends Specification {
 			char[] expectedChars = "qwerty".toCharArray()
 
 		when:
-			builder.compare("length", 3, 3)
+			builder.apply("length", 3, 3)
 		then:
 			builder.getPropertyResults().size() == 1
 			builder.getPropertyResults().get(builder.createKey("length")).isSuccess()
@@ -66,7 +66,7 @@ class ComplexComparisonResultBuilderTest extends Specification {
 			complexResult1.isSuccess()
 
 		when:
-			builder.compare("length2", 3, 6)
+			builder.apply("length2", 3, 6)
 		then:
 			builder.getPropertyResults().size() == 2
 			ComparisonResult result = builder.getPropertyResults().get(builder.createKey("length2"))
@@ -76,20 +76,20 @@ class ComplexComparisonResultBuilderTest extends Specification {
 			result.isSuccess() == false
 
 		when:
-			builder.compare("toCharArray1", "qwe".toCharArray(), "qwe".toCharArray())
+			builder.apply("toCharArray1", "qwe".toCharArray(), "qwe".toCharArray())
 		then: "deep equality is used by default - arrays are resolved"
 			builder.getPropertyResults().size() == 3
 			builder.getPropertyResults().get(builder.createKey("toCharArray1")).isSuccess()
 
 		when: "compare is called with the custom performer"
-			builder.compare("toCharArray2", actualChars, expectedChars, mockPerformer)
+			builder.apply("toCharArray2", actualChars, expectedChars, mockPerformer)
 		then: "specified performer is called"
 			1 * mockPerformer.apply(actualChars, expectedChars) >> new ComparisonResult(0, 0, mockPerformer, true)
 		and: "result returned by the performer is used"
 			builder.getPropertyResults().get(builder.createKey("toCharArray2")).isSuccess()
 
 		when:
-			builder.compare("toCharArray3", actualChars, expectedChars, mockPerformer)
+			builder.apply("toCharArray3", actualChars, expectedChars, mockPerformer)
 		then:
 			1 * mockPerformer.apply(actualChars, expectedChars) >> new ComparisonResult(0, 0, mockPerformer, false)
 		and:

@@ -50,13 +50,13 @@ public class MapComparisonPerformer<V> extends ContainerComparisonPerformer<V, M
 	
 	private ComparisonResult createSizeCheckResult(Map<?, ? extends V> actual, Map<?, ? extends V> expected) {
 		return new ComplexComparisonResultBuilder<Map<?, ? extends V>>(Map.class)
-				.compare("size", actual.size(), expected.size())
+				.apply("size", actual.size(), expected.size())
 				.build(actual, expected, this);
 	}
 	
 	private ComparisonResult createKeysCheckResult(Map<?, ? extends V> actual, Map<?,? extends V> expected) {
 		return new ComplexComparisonResultBuilder<Map<?,? extends V>>(Map.class)
-				.compare("keySet", actual.keySet(), expected.keySet())
+				.apply("keySet", actual.keySet(), expected.keySet())
 				.build(actual, expected, this);
 	}
 	

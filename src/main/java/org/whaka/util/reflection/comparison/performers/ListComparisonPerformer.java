@@ -33,7 +33,7 @@ public class ListComparisonPerformer<T> extends ContainerComparisonPerformer<T, 
 	
 	private ComparisonResult createSizeCheckResult(List<? extends T> actual, List<? extends T> expected) {
 		return new ComplexComparisonResultBuilder<List<? extends T>>(List.class)
-				.compare("size", actual.size(), expected.size())
+				.apply("size", actual.size(), expected.size())
 				.build(actual, expected, this);
 	}
 	

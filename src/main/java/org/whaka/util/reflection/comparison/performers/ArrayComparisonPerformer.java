@@ -32,7 +32,7 @@ public class ArrayComparisonPerformer<T> extends ContainerComparisonPerformer<T,
 	
 	private ComparisonResult createLengthCheckResult(T[] actual, T[] expected) {
 		return new ComplexComparisonResultBuilder<T[]>(Object[].class)
-				.compare("length", actual.length, expected.length)
+				.apply("length", actual.length, expected.length)
 				.build(actual, expected, this);
 	}
 	
