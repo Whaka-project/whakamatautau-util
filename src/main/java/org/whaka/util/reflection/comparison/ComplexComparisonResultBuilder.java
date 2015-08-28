@@ -33,10 +33,9 @@ public class ComplexComparisonResultBuilder<T> {
 		return type;
 	}
 	
-	public ComplexComparisonResultBuilder<T> setDefaultComparisonPerformer(ComparisonPerformer<Object> defaultComparisonPerformer) {
+	public void setDefaultComparisonPerformer(ComparisonPerformer<Object> defaultComparisonPerformer) {
 		this.defaultComparisonPerformer = Objects.requireNonNull(defaultComparisonPerformer,
 				"Default comparison performer cannot be null!");
-		return this;
 	}
 	
 	public ComparisonPerformer<Object> getDefaultComparisonPerformer() {
