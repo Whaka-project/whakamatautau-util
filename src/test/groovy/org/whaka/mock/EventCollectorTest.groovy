@@ -1,8 +1,5 @@
 package org.whaka.mock
 
-import org.mockito.invocation.InvocationOnMock
-import org.mockito.stubbing.Answer
-import org.whaka.mock.EventCollector
 import spock.lang.Specification
 
 import java.util.function.BiConsumer
@@ -16,7 +13,7 @@ class EventCollectorTest extends Specification {
     private BiConsumer<Listener, Integer> method = {l,e -> l.event(e)}
     private Predicate<Integer> filter = Mock()
     private EventCollector.EventHandler<Integer> filterEH = Mock()
-    private EventCollector<Listener, Integer> collector = new EventCollector<>(Listener.class, method, filter, filterEH)
+    private EventCollector<Listener, Integer> collector = EventCollector.create(Listener.class, method, filter, filterEH)
     private Listener l = collector.getTarget()
 
     def "all filters are called" () {
@@ -41,13 +38,13 @@ class EventCollectorTest extends Specification {
             1 * filter.test(event) >> true
             1 * filterEH.test(event) >> true
         and:
-            1 * filterEH.accepted(event)
+            1 * filterEH.eventCollected(event)
 
         and:
             1 * filter.test(event * 2) >> false
             1 * filterEH.test(event * 2) >> true
         and:
-            0 * filterEH.accepted(_)
+            0 * filterEH.eventCollected(_)
 
         where:
             event << 100

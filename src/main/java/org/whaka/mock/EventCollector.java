@@ -3,10 +3,7 @@ package org.whaka.mock;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -15,25 +12,25 @@ import org.mockito.MockSettings;
 import org.mockito.Mockito;
 import org.mockito.invocation.DescribedInvocation;
 
+import com.google.common.collect.ImmutableList;
+
+import static org.whaka.util.UberStreams.stream;
+
 /**
- * Collect arguments from the called method (may be used with listeners).
+ * Collect arguments from the called method if ALL filters are passed successfully.
+ * May be used with listeners to collect events.
  *
  * @param <Target>  the target class
  * @param <Event>  the event type
  */
 public class EventCollector<Target, Event> {
 
-	private final List<Event> events = Collections.synchronizedList(new ArrayList<>());
+	private final List<Event> events = new ArrayList<>();
 	private final Target target;
-
-	@SafeVarargs
-	@SuppressWarnings("unchecked")
-	public EventCollector(Class<Target> targetClass, BiConsumer<Target, Event> targetMethod, Predicate<Event>... filters) {
-		this(targetClass, targetMethod, new HashSet<>(Arrays.asList(filters)));
-	}
+	private final Object lock = new Object();
 
 	@SuppressWarnings("unchecked")
-	public EventCollector(Class<Target> targetClass, BiConsumer<Target, Event> targetMethod, Collection<Predicate<Event>> filters) {
+	private EventCollector(Class<Target> targetClass, BiConsumer<Target, Event> targetMethod, Collection<Predicate<Event>> filters) {
 
 		List<DescribedInvocation> invokes = new ArrayList<>();
 		MockSettings settings = Mockito.withSettings()
@@ -41,35 +38,46 @@ public class EventCollector<Target, Event> {
 
 		this.target = Mockito.mock(targetClass, settings);
 
-		Set<EventHandler<Event>> eventHandlers = filters.stream()
-				.filter(p -> p instanceof EventHandler)
+		List<EventHandler<Event>> eventHandlers = filters.stream()
+				.filter(EventHandler.class::isInstance)
 				.map(p -> (EventHandler<Event>) p)
-				.collect(Collectors.toSet());
+				.collect(Collectors.toList());
 
 		targetMethod.accept(Mockito.doAnswer(invoke -> {
-			Event event = (Event) invoke.getArguments()[0];
-			boolean filterFail = filters.stream().map(p -> p.test(event)).collect(Collectors.toSet()).contains(false);
-			if(!filterFail) {
-				events.add(event);
-				eventHandlers.forEach(c -> c.accepted(event));
-			}
+			synchronized (lock) {
+				Event event = (Event) invoke.getArguments()[0];
+				boolean filterFail = stream(filters).map(p -> p.test(event)).toSet().contains(false);
+				if (!filterFail) {
+					events.add(event);
+					eventHandlers.forEach(c -> c.eventCollected(event));
+				}
 
-			return null;
+				return null;
+			}
 		}).when(this.target), Matchers.any());
 
 		if (invokes.size() != 1)
 			throw new IllegalStateException("Single listener interaction was expected! But actual: " + invokes);
 	}
 
+	@SafeVarargs
+	public static <T, E> EventCollector<T, E> create(Class<T> target, BiConsumer<T, E> method, Predicate<E>... filters){
+		return new EventCollector<>(target, method, Arrays.asList(filters));
+	}
+
+	public static <T, E> EventCollector<T, E> create(Class<T> target, BiConsumer<T, E> method, Collection<Predicate<E>> filters){
+		return new EventCollector<>(target, method, filters);
+	}
+
 	public Target getTarget() {
 		return target;
 	}
 
-	public List<Event> getEvents() {
-		return events;
+	public synchronized List<Event> getEvents() {
+		return ImmutableList.copyOf(events);
 	}
 
-	public Event getLastEvent() {
+	public synchronized Event getLastEvent() {
 		return events.isEmpty() ? null : events.get(events.size() - 1);
 	}
 
@@ -81,6 +89,6 @@ public class EventCollector<Target, Event> {
 		 *
 		 * @param event the processed event
 		 */
-		void accepted(Event event);
+		void eventCollected(Event event);
 	}
 }
