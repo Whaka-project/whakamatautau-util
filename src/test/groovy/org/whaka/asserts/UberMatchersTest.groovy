@@ -43,6 +43,8 @@ class UberMatchersTest extends Specification {
 			[]					|	null		|	Objects.&equals			||	false
 			[null]				|	null		|	Objects.&equals			||	true
 			[null, null]		|	null		|	Objects.&equals			||	true
+			[arr(1,2),arr(3,4)]	|	arr(1,2)	|	Objects.&equals			||	false
+			[arr(1,2),arr(3,4)]	|	arr(1,2)	|	Objects.&deepEquals		||	true
 	}
 
 	def "hasItem with predicate: NPE"() {
@@ -59,6 +61,57 @@ class UberMatchersTest extends Specification {
 
 		when: "properly created matcher is called upon null value as a collection"
 			UberMatchers.hasItem(42, {a,b->true}).matches(null as Collection)
+		then:
+			thrown(NullPointerException)
+	}
+
+	def "isIn with predicate: basics"() {
+		given:
+			BiPredicate predicate = Mock()
+			Matcher m = UberMatchers.isIn(["qwe", "rty", "qaz", "pop"], predicate)
+		when:
+			def res = m.matches("item")
+		then:
+			1 * predicate.test("qwe", "item") >> false
+		and:
+			1 * predicate.test("rty", "item") >> false
+		and:
+			1 * predicate.test("qaz", "item") >> true
+		and:
+			0 * predicate.test(_, _)
+		and:
+			res == true
+	}
+
+	def "isIn with predicate: examples"() {
+		given:
+			Matcher m = UberMatchers.isIn(values as List, predicate)
+		expect:
+			m.matches(item) == result
+		where:
+			values				|	item		|	predicate				||	result
+			[]					|	3			|	Objects.&equals			||	false
+			[]					|	3			|	{a,b -> true}			||	false
+			[1,2]				|	3			|	Objects.&equals			||	false
+			[1,2]				|	3			|	{a,b -> true}			||	true
+			[1,2,3]				|	3			|	Objects.&equals			||	true
+			[1,2,3]				|	3			|	{a,b -> false}			||	false
+			[]					|	null		|	Objects.&equals			||	false
+			[null]				|	null		|	Objects.&equals			||	true
+			[null, null]		|	null		|	Objects.&equals			||	true
+			[arr(1,2),arr(3,4)]	|	arr(1,2)	|	Objects.&equals			||	false
+			[arr(1,2),arr(3,4)]	|	arr(1,2)	|	Objects.&deepEquals		||	true
+	}
+
+	def "isIn with predicate: NPE"() {
+
+		when: "collection is null"
+			UberMatchers.isIn(null, Mock(BiPredicate))
+		then:
+			thrown(NullPointerException)
+
+		when: "predicate is null"
+			UberMatchers.isIn([], null)
 		then:
 			thrown(NullPointerException)
 	}

@@ -24,7 +24,7 @@ import org.hamcrest.Matcher;
  */
 public class FunctionalMatcher<T> extends BaseMatcher<T> {
 
-	private final Class<T> type;
+	private final Class<? super T> type;
 	private final Predicate<T> predicate;
 	private final Consumer<Description> describer;
 	
@@ -33,7 +33,7 @@ public class FunctionalMatcher<T> extends BaseMatcher<T> {
 	 * consumer that calls {@link Description#appendText(String)} with the specified string.
 	 * 
 	 */
-	public FunctionalMatcher(Class<T> type, Predicate<T> predicate, String description) {
+	public FunctionalMatcher(Class<? super T> type, Predicate<T> predicate, String description) {
 		this(type, predicate, d -> d.appendText(description));
 	}
 	
@@ -46,13 +46,13 @@ public class FunctionalMatcher<T> extends BaseMatcher<T> {
 	 * 
 	 * @see #FunctionalMatcher(Class, Predicate, String)
 	 */
-	public FunctionalMatcher(Class<T> type, Predicate<T> predicate, Consumer<Description> describer) {
+	public FunctionalMatcher(Class<? super T> type, Predicate<T> predicate, Consumer<Description> describer) {
 		this.type = Objects.requireNonNull(type, "type");
 		this.predicate = Objects.requireNonNull(predicate, "predicate");
 		this.describer = Objects.requireNonNull(describer, "describer");
 	}
 	
-	public Class<T> getType() {
+	public Class<? super T> getType() {
 		return type;
 	}
 	

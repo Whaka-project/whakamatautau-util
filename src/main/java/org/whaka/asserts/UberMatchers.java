@@ -13,7 +13,6 @@ import org.whaka.asserts.matcher.FunctionalMatcher;
 import org.whaka.asserts.matcher.RegexpMatcher;
 import org.whaka.asserts.matcher.ThrowableMatcher;
 import org.whaka.util.UberCollections;
-import org.whaka.util.reflection.UberClasses;
 import org.whaka.util.reflection.comparison.ComparisonPerformer;
 import org.whaka.util.reflection.comparison.ComparisonPerformers;
 
@@ -137,16 +136,35 @@ public final class UberMatchers {
 	public static Matcher<Throwable> notExpected() {
 		return ThrowableMatcher.notExpected();
 	}
-	
+
 	/**
-	 * Create a matcher that will check that a collection contains the specified item.
+	 * <p>Create a matcher that will check that a collection contains the specified item.
 	 * Specified predicate is used to check elements equality.
+	 * 
+	 * <p><b>Note:</b> matcher will throw an NPE if matched against a <code>null</code> value!
+	 * 
+	 * @throws NullPointerException if specified predicate is <code>null</code>
 	 */
 	public static <T> Matcher<Collection<? extends T>> hasItem(T item, BiPredicate<T, T> matcher) {
 		Objects.requireNonNull(matcher, "Predicate cannot be null!");
 		return new FunctionalMatcher<Collection<? extends T>>(
-				UberClasses.cast(Collection.class),
+				Collection.class,
 				c -> UberCollections.contains(c, item, matcher),
 				d -> d.appendText("has item ").appendValue(item).appendText(" with a predicate"));
+	}
+
+	/**
+	 * Create a matcher that will check that an item is contained in the specified collection.
+	 * Specified predicate is used to check elements equality.
+	 * 
+	 * @throws NullPointerException if specified collection or predicate is <code>null</code>
+	 */
+	public static <T> Matcher<T> isIn(Collection<? extends T> col, BiPredicate<T, T> matcher) {
+		Objects.requireNonNull(col, "Collection cannot be null!");
+		Objects.requireNonNull(matcher, "Predicate cannot be null!");
+		return new FunctionalMatcher<T>(
+				Object.class,
+				t -> UberCollections.contains(col, t, matcher),
+				d -> d.appendText("one of ").appendValue(col).appendText(" with a predicate"));
 	}
 }

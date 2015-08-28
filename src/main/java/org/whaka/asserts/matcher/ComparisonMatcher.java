@@ -39,7 +39,7 @@ public class ComparisonMatcher<T> extends ResultProvidingMatcher<T> {
 
 	@Override
 	public Optional<ComparisonAssertResult> matches(T item, String message, Throwable cause) {
-		ComparisonResult comparisonResult = getComparisonPerformer().compare(item, getValue());
+		ComparisonResult comparisonResult = getComparisonPerformer().apply(item, getValue());
 		if (comparisonResult.isSuccess())
 			return Optional.empty();
 		ComparisonAssertResult result = ComparisonAssertResult.createWithCause(comparisonResult, message);
