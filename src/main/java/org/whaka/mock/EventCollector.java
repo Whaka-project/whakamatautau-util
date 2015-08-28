@@ -73,12 +73,16 @@ public class EventCollector<Target, Event> {
 		return target;
 	}
 
-	public synchronized List<Event> getEvents() {
-		return ImmutableList.copyOf(events);
+	public List<Event> getEvents() {
+		synchronized (lock) {
+			return ImmutableList.copyOf(events);
+		}
 	}
 
-	public synchronized Event getLastEvent() {
-		return events.isEmpty() ? null : events.get(events.size() - 1);
+	public Event getLastEvent() {
+		synchronized (lock) {
+			return events.isEmpty() ? null : events.get(events.size() - 1);
+		}
 	}
 
 
