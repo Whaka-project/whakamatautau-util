@@ -16,7 +16,6 @@ import org.mockito.Mockito;
 import org.mockito.invocation.DescribedInvocation;
 import org.whaka.util.reflection.UberClasses;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -29,49 +28,12 @@ import com.google.common.collect.ImmutableList;
 public class EventCollector<Target, Event> {
 
 	private final Object lock = new Object();
-
-	private final List<Predicate<Event>> filters;
-	private final List<EventHandler<Event>> eventHandlers;
 	
 	private final Target target;
 	private final List<Event> events = new ArrayList<>();
 
-	@SuppressWarnings("unchecked")
-	private EventCollector(Class<Target> targetClass, Class<? super Event> eventClass,
-			BiConsumer<Target, ArgumentCaptor<Event>> method, Collection<Predicate<Event>> filters) {
-		
-		Preconditions.checkArgument(!filters.contains(null), "Event filter cannot be null!");
-		this.filters = ImmutableList.copyOf(filters);
-		this.eventHandlers = selectEventHandlers(filters);
-		
-		List<DescribedInvocation> invokes = new ArrayList<>();
-		MockSettings settings = Mockito.withSettings()
-				.invocationListeners(report -> invokes.add(report.getInvocation()));
-		
-		this.target = Mockito.mock(targetClass, settings);
-
-		ArgumentCaptor<Event> captor = (ArgumentCaptor<Event>) ArgumentCaptor.forClass(eventClass);
-		method.accept(Mockito.doAnswer(invoke -> {
-			Event event = captor.getValue();
-			synchronized (lock) {
-				boolean filterFail = stream(filters).map(p -> p.test(event)).toSet().contains(false);
-				if (!filterFail) {
-					events.add(event);
-					eventHandlers.forEach(c -> c.eventCollected(event));
-				}
-			}
-			return null;
-		}).when(target), captor);
-		
-		if (invokes.size() != 1)
-			throw new IllegalStateException("Single listener interaction was expected! But actual: " + invokes);
-	}
-	
-	private static <E> List<EventHandler<E>> selectEventHandlers(Collection<Predicate<E>> filters) {
-		return filters.stream()
-				.filter(EventHandler.class::isInstance)
-				.map(EventHandler.class::cast)
-				.collect(toList());
+	private EventCollector(Target target) {
+		this.target = target;
 	}
 
 	@SafeVarargs
@@ -94,15 +56,40 @@ public class EventCollector<Target, Event> {
 	
 	public static <T, E> EventCollector<T, E> createPartial(Class<T> targetClass, Class<E> eventClass,
 			BiConsumer<T, ArgumentCaptor<E>> method, Collection<Predicate<E>> filters){
-		return new EventCollector<>(targetClass, eventClass, method, filters);
+
+		List<EventHandler<E>> eventHandlers = selectEventHandlers(filters);
+		
+		List<DescribedInvocation> invokes = new ArrayList<>();
+		MockSettings settings = Mockito.withSettings()
+				.invocationListeners(report -> invokes.add(report.getInvocation()));
+		
+		T target = Mockito.mock(targetClass, settings);
+		EventCollector<T, E> collector = new EventCollector<>(target);
+
+		ArgumentCaptor<E> captor = ArgumentCaptor.forClass(eventClass);
+		method.accept(Mockito.doAnswer(invoke -> {
+			E event = captor.getValue();
+			synchronized (collector.lock) {
+				boolean filterFail = stream(filters).map(p -> p.test(event)).toSet().contains(false);
+				if (!filterFail) {
+					collector.events.add(event);
+					eventHandlers.forEach(c -> c.eventCollected(event));
+				}
+			}
+			return null;
+		}).when(target), captor);
+		
+		if (invokes.size() != 1)
+			throw new IllegalStateException("Single listener interaction was expected! But actual: " + invokes);
+		
+		return collector;
 	}
 	
-	public List<Predicate<Event>> getFilters() {
-		return filters;
-	}
-	
-	public List<EventHandler<Event>> getEventHandlers() {
-		return eventHandlers;
+	private static <E> List<EventHandler<E>> selectEventHandlers(Collection<Predicate<E>> filters) {
+		return filters.stream()
+				.filter(EventHandler.class::isInstance)
+				.map(EventHandler.class::cast)
+				.collect(toList());
 	}
 	
 	public Target getTarget() {

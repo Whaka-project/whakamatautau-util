@@ -1,9 +1,9 @@
 package org.whaka.mock
 
+import spock.lang.Specification
+
 import java.util.function.BiConsumer
 import java.util.function.Predicate
-
-import spock.lang.Specification
 
 /**
  * @author gdzabaev
@@ -15,7 +15,7 @@ class EventCollectorTest extends Specification {
             BiConsumer<Listener, Integer> method = {l,e -> l.event(e)}
             Predicate<Integer> filter = Mock()
             EventCollector.EventHandler<Integer> filterEH = Mock()
-            def collector = EventCollector.create(Listener.class, method, filter, filterEH)
+            EventCollector<Listener, Integer> collector = EventCollector.create(Listener.class, method, filter, filterEH)
             Listener l = collector.getTarget()
         when:
             l.event(100)
@@ -33,7 +33,7 @@ class EventCollectorTest extends Specification {
             BiConsumer<Listener, Integer> method = {l,e -> l.event(e)}
             Predicate<Integer> filter = Mock()
             EventCollector.EventHandler<Integer> filterEH = Mock()
-            def collector = EventCollector.create(Listener.class, method, filter, filterEH)
+            EventCollector<Listener, Integer> collector = EventCollector.create(Listener.class, method, filter, filterEH)
             Listener l = collector.getTarget()
         when:
             l.event(100)
@@ -51,7 +51,7 @@ class EventCollectorTest extends Specification {
             BiConsumer<Listener, Integer> method = {l,e -> l.event(e)}
             Predicate<Integer> filter = Mock()
             EventCollector.EventHandler<Integer> filterEH = Mock()
-            def collector = EventCollector.create(Listener.class, method, filter, filterEH)
+            EventCollector<Listener, Integer> collector = EventCollector.create(Listener.class, method, filter, filterEH)
             Listener l = collector.getTarget()
         when:
             l.event(100)
@@ -68,7 +68,7 @@ class EventCollectorTest extends Specification {
             BiConsumer<Listener, Integer> method = {l,e -> l.event(e)}
             Predicate<Integer> filter = Mock()
             EventCollector.EventHandler<Integer> filterEH = Mock()
-            def collector = EventCollector.create(Listener.class, method, filter, filterEH)
+            EventCollector<Listener, Integer> collector = EventCollector.create(Listener.class, method, filter, filterEH)
             Listener l = collector.getTarget()
         when:
             l.event(100)
