@@ -12,6 +12,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.whaka.asserts.Assert;
+import org.whaka.util.function.Tuple2;
 import org.whaka.util.reflection.UberClasses;
 
 
@@ -59,6 +60,27 @@ public class EventCombinerJavaTest {
 		
 		Mockito.verify(combinator, Mockito.times(1)).apply(Matchers.any());
 		Assert.assertThat(res, equalTo("combined result"));
+	}
+	
+	@Test
+	public void test_basic() {
+		
+		// given:
+		
+		EventCombiner<Listener, Tuple2<String, Integer>> combiner = EventCombiner.create(Listener::event2);
+		
+		Listener target = Mockito.mock(Listener.class);
+		combiner.accept(Mockito.doNothing().when(target));
+		
+		// when:
+		
+		target.event2("qwe", 42);
+		Tuple2<String, Integer> res = combiner.getValue();
+		
+		// then:
+		
+		Assert.assertThat(res._1, equalTo("qwe"));
+		Assert.assertThat(res._2, equalTo(42));
 	}
 	
 	public static interface Listener {

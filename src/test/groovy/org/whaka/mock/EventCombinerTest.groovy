@@ -6,8 +6,10 @@ import java.util.function.Function
 import org.whaka.util.function.Consumer3
 import org.whaka.util.function.Consumer4
 
+import spock.lang.Ignore
 import spock.lang.Specification
 
+@Ignore
 class EventCombinerTest extends Specification {
 
 	def "for captors"() {
@@ -32,36 +34,36 @@ class EventCombinerTest extends Specification {
 			captors	<< [1, 3, 5]
 	}
 
-//	def "for values"() {
-//		given:
-//			BiConsumer methodCall = Mock()
-//			Function combinator = Mock()
-//
-//		when: "#forValues is called with some method call, and a combinator"
-//			def combiner = EventCombiner.forValues(captors, methodCall, combinator)
-//		then: "combinator function is stored"
-//			combiner.getCombiner().is(combinator)
-//		and: "method call is wrapped, so it's not the same"
-//			combiner.getMethodCall().is(methodCall) == false
-//		and: "specified number of argument captors is created"
-//			combiner.getCaptors().length == captors
-//
-//		when: "accept is called with some target"
-//			combiner.accept("target")
-//		then: "method call is called with the target and initiated matchers"
-//			1 * methodCall.accept("target", _) >> {
-//				Object[] matchers = it[1]
-//				// the same amount of matchers is passed, as created captors
-//				assert matchers.size() == captors
-//				matchers.each {
-//					// each matcher is null
-//					assert it == null
-//				}
-//			}
-//
-//		where:
-//			captors	<< [1, 3, 5]
-//	}
+	def "for values"() {
+		given:
+			BiConsumer methodCall = Mock()
+			Function combinator = Mock()
+
+		when: "#forValues is called with some method call, and a combinator"
+			def combiner = EventCombiner.forValues(captors, methodCall, combinator)
+		then: "combinator function is stored"
+			combiner.getCombiner().is(combinator)
+		and: "method call is wrapped, so it's not the same"
+			combiner.getMethodCall().is(methodCall) == false
+		and: "specified number of argument captors is created"
+			combiner.getCaptors().length == captors
+
+		when: "accept is called with some target"
+			combiner.accept("target")
+		then: "method call is called with the target and initiated matchers"
+			1 * methodCall.accept("target", _) >> {
+				Object[] matchers = it[1]
+				// the same amount of matchers is passed, as created captors
+				assert matchers.size() == captors
+				matchers.each {
+					// each matcher is null
+					assert it == null
+				}
+			}
+
+		where:
+			captors	<< [1, 3, 5]
+	}
 
 	def "for captor"() {
 		given:

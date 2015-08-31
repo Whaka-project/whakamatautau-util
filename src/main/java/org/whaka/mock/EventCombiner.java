@@ -1,6 +1,9 @@
 package org.whaka.mock;
 
 import static org.whaka.util.UberStreams.*;
+import static org.whaka.util.function.Tuple2.*;
+import static org.whaka.util.function.Tuple3.*;
+import static org.whaka.util.function.Tuple4.*;
 
 import java.util.Objects;
 import java.util.function.BiConsumer;
@@ -42,13 +45,16 @@ import com.google.common.base.Preconditions;
  * This function will be called whenever {@link #getValue()} is called, and will receive array of the same size {@code N}
  * specified at the construction; this array will contain all the objects returned by the ArgumentCaptor instances.
  * 
- * <p>See method {@link #forCaptors(int, BiConsumer, Function)} for described basic functionality.
+ * <p>See method {@link #forCaptors(int, BiConsumer, Function)} for described basic functionality. But also take a look
+ * at the {@link #forValues(int, BiConsumer, Function)} method, allowing you to perform almost the same operation,
+ * but automatically initializing captors.
  * 
  * <p>See method {@link #forCaptor(BiConsumer)} allowing to perform a single selective capture.
  * 
  * <p>Also note all the {@link #create(BiConsumer)} methods with a single argument. Those provide the easiest way
  * to create a combiner for multiple arguments.
  * 
+ * @see #forValues(int, BiConsumer, Function)
  * @see #forCaptors(int, BiConsumer, Function)
  * @see #forCaptor(BiConsumer)
  * @see #create(BiConsumer)
@@ -84,6 +90,7 @@ public class EventCombiner<Target, Event> implements Consumer<Target> {
 	 * into a single instance of the specified "event" type {@code <E>}
 	 * 
 	 * @see #forCaptor(BiConsumer)
+	 * @see #forValues(int, BiConsumer, Function)
 	 * @see #create(BiConsumer)
 	 */
 	public static <T,E> EventCombiner<T,E> forCaptors(int numberOfEvents,
@@ -141,32 +148,27 @@ public class EventCombiner<Target, Event> implements Consumer<Target> {
 				arr -> (E)arr[0]);
 	}
 	
-//	/**
-//	 * <p>Basically equal to the {@link #forCaptors(int, BiConsumer, Function)} with only difference that
-//	 * specified {@link BiPredicate} method call receives an array of matchers ({@code Object[]}) instead of
-//	 * captors. So user don't have to manually call {@link ArgumentCaptor#capture()} method on all of them.
-//	 *
-//	 * <p><b>Note:</b> since all captors get initiated before the call to the consumer - they <b>will definitely
-//	 * match only {@code N} first arguments</b> of the called method. Where {@code N} is the number of generated
-//	 * captors. This means that this method will not suffice in case you want to captor <i>non-sequential</i>
-//	 * arguments!
-//	 *
-//	 * @see #forCaptors(int, BiConsumer, Function)
-//	 * @see #forCaptor(BiConsumer)
-//	 */
-//	public static <T,E> EventCombiner<T,E> forValues(int numberOfEvents,
-//			BiConsumer<T, Object[]> methodCall,
-//			Function<Object[], E> combiner) {
-//		Objects.requireNonNull(methodCall, "Method call cannot be null!");
-//		return forCaptors(numberOfEvents,
-//				(t, captors) -> {
-//					Object[] arr = new Object[captors.length];
-//					for (int i = 0; i < arr.length; i++)
-//						arr[i] = captors[i].capture();
-//					methodCall.accept(t, arr);
-//				},
-//				combiner);
-//	}
+	/**
+	 * <p>Basically equal to the {@link #forCaptors(int, BiConsumer, Function)} with only difference that
+	 * specified {@link BiPredicate} method call receives an array of matchers ({@code Object[]}) instead of
+	 * captors. So user don't have to manually call {@link ArgumentCaptor#capture()} method on all of them.
+	 * 
+	 * <p><b>Note:</b> since all captors get initiated before the call to the consumer - they <b>will definitely
+	 * match only {@code N} first arguments</b> of the called method. Where {@code N} is the number of generated
+	 * captors. This means that this method will not suffice in case you want to captor <i>non-sequential</i>
+	 * arguments!
+	 * 
+	 * @see #forCaptors(int, BiConsumer, Function)
+	 * @see #forCaptor(BiConsumer)
+	 */
+	public static <T,E> EventCombiner<T,E> forValues(int numberOfEvents,
+			BiConsumer<T, Object[]> methodCall,
+			Function<Object[], E> combiner) {
+		Objects.requireNonNull(methodCall, "Method call cannot be null!");
+		return forCaptors(numberOfEvents,
+				(t, captors) -> methodCall.accept(t, stream(captors).map(c -> c.capture()).toArray()),
+				combiner);
+	}
 	
 	/**
 	 * <p>The easiest way to create a combiner that generates a single captor and captures a single argument.
@@ -183,8 +185,8 @@ public class EventCombiner<Target, Event> implements Consumer<Target> {
 	@SuppressWarnings("unchecked")
 	public static <T, E> EventCombiner<T, E> create(BiConsumer<T, E> methodCall) {
 		Objects.requireNonNull(methodCall, "Method call cannot be null!");
-		return forCaptors(1,
-				(t, arr) -> methodCall.accept(t, (E)arr[0].capture()),
+		return forValues(1,
+				(t, arr) -> methodCall.accept(t, (E)arr[0]),
 				arr -> (E)arr[0]);
 	}
 
@@ -202,9 +204,9 @@ public class EventCombiner<Target, Event> implements Consumer<Target> {
 	@SuppressWarnings("unchecked")
 	public static <T, A, B> EventCombiner<T, Tuple2<A, B>> create(Consumer3<T, A, B> methodCall) {
 		Objects.requireNonNull(methodCall, "Method call cannot be null!");
-		return forCaptors(2,
-				(t, arr) -> methodCall.accept(t, (A)arr[0].capture(), (B)arr[1].capture()),
-				arr -> Tuple2.tuple2((A)arr[0], (B)arr[1]));
+		return forValues(2,
+				(t, arr) -> methodCall.accept(t, (A)arr[0], (B)arr[1]),
+				arr -> tuple2((A)arr[0], (B)arr[1]));
 	}
 	
 	/**
@@ -221,9 +223,9 @@ public class EventCombiner<Target, Event> implements Consumer<Target> {
 	@SuppressWarnings("unchecked")
 	public static <T, A, B, C> EventCombiner<T, Tuple3<A, B, C>> create(Consumer4<T, A, B, C> methodCall) {
 		Objects.requireNonNull(methodCall, "Method call cannot be null!");
-		return forCaptors(3,
-				(t, arr) -> methodCall.accept(t, (A)arr[0].capture(), (B)arr[1].capture(), (C)arr[2].capture()),
-				arr -> Tuple3.tuple3((A)arr[0], (B)arr[1], (C)arr[2]));
+		return forValues(3,
+				(t, arr) -> methodCall.accept(t, (A)arr[0], (B)arr[1], (C)arr[2]),
+				arr -> tuple3((A)arr[0], (B)arr[1], (C)arr[2]));
 	}
 	
 	/**
@@ -240,9 +242,9 @@ public class EventCombiner<Target, Event> implements Consumer<Target> {
 	@SuppressWarnings("unchecked")
 	public static <T, A, B, C, D> EventCombiner<T, Tuple4<A, B, C, D>> create(Consumer5<T, A, B, C, D> methodCall) {
 		Objects.requireNonNull(methodCall, "Method call cannot be null!");
-		return forCaptors(4,
-				(t, arr) -> methodCall.accept(t, (A)arr[0].capture(), (B)arr[1].capture(), (C)arr[2].capture(), (D)arr[3].capture()),
-				arr -> Tuple4.tuple4((A)arr[0], (B)arr[1], (C)arr[2], (D)arr[3]));
+		return forValues(4,
+				(t, arr) -> methodCall.accept(t, (A)arr[0], (B)arr[1], (C)arr[2], (D)arr[3]),
+				arr -> tuple4((A)arr[0], (B)arr[1], (C)arr[2], (D)arr[3]));
 	}
 	
 	/**
