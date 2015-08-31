@@ -100,7 +100,7 @@ class EventCollectorTest extends Specification {
 	@SuppressWarnings("rawtypes")
 	private static EventCollector<Listener, Integer> createCollector(Predicate<Integer>[] filters) {
 		BiConsumer<Listener, Integer> method = {Listener l, e -> l.event(e)}
-		return EventCollector.create(Listener, method, filters)
+		return EventCollector.create(Listener.class, method, filters)
 	}
 
 	def "EventCombiner: capture selective"() {
@@ -109,7 +109,7 @@ class EventCollectorTest extends Specification {
 				EventCombiner.forCaptor({Listener l, ArgumentCaptor<String> c -> l.event2(Matchers.any(), c.capture())})
 		and:
 			Predicate<String> filter = Mock()
-			EventCollector<Listener, String> collector = EventCollector.create(Listener, combiner, filter)
+			EventCollector<Listener, String> collector = EventCollector.create(Listener.class, combiner, filter)
 
 		when:
 			collector.getTarget().event2(42, "qwe")
@@ -136,7 +136,7 @@ class EventCollectorTest extends Specification {
 			EventCombiner<Listener, Tuple2<Integer, String>> combiner = EventCombiner.create(methodCall)
 		and:
 			Predicate<Tuple2<Integer, String>> filter = Mock()
-			EventCollector<Listener, Tuple2<Integer, String>> collector = EventCollector.create(Listener, combiner, filter)
+			EventCollector<Listener, Tuple2<Integer, String>> collector = EventCollector.create(Listener.class, combiner, filter)
 
 		when:
 			collector.getTarget().event2(42, "qwe")
