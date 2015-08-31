@@ -157,7 +157,7 @@ class EventCollectorTest extends Specification {
 			collector.getEvents() == [Tuple2.tuple2(42, "qwe")]
 	}
 
-    private interface Listener {
+    public static interface Listener {
         void event(Integer i)
         void event2(Integer i, String s)
     }
