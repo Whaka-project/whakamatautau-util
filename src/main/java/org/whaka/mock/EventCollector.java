@@ -8,10 +8,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import org.mockito.ArgumentCaptor;
+import org.mockito.Matchers;
 import org.mockito.MockSettings;
 import org.mockito.Mockito;
 import org.mockito.invocation.DescribedInvocation;
@@ -58,7 +60,7 @@ public class EventCollector<Target, Event> {
 	}
 
 	/**
-	 * 
+	 * Equal to the {@link #create(Class, BiConsumer, Collection)} but with vararg for predicate filters.
 	 */
 	@SafeVarargs
 	public static <T, E> EventCollector<T, E> create(Class<T> targetClass,
@@ -67,9 +69,13 @@ public class EventCollector<Target, Event> {
 	}
 
 	/**
+	 * Create an event collector that contains mock instance of the specified target class with a one method stubbed.
+	 * Method to be stubbed is indicated by the specified predicate. All the predicates in the specified collection
+	 * will be used to filter out events.
 	 *
 	 * @see #create(Class, BiConsumer, Predicate...)
 	 * @see #createPartial(Class, Class, BiConsumer, Collection)
+	 * @see EventHandler
 	 */
 	public static <T, E> EventCollector<T, E> create(Class<T> targetClass,
 			BiConsumer<T, E> method, Collection<Predicate<? super E>> filters){
@@ -78,7 +84,7 @@ public class EventCollector<Target, Event> {
 	}
 	
 	/**
-	 * 
+	 * Equal to the {@link #createPartial(Class, Class, BiConsumer, Collection)} but with vararg for predicate filters.
 	 */
 	@SafeVarargs
 	public static <T, E> EventCollector<T, E> createPartial(Class<T> targetClass, Class<E> eventClass,
@@ -87,9 +93,53 @@ public class EventCollector<Target, Event> {
 	}
 	
 	/**
+	 * <p>Pure form of the event collector allows to stub only methods with one argument. But using a {@link BiPredicate}
+	 * to indicate stubbed method allows you to call <i>any</i> method where matcher (passed into a predicate) might
+	 * be passed as one of the multiple arguments. Example:
+	 * <pre>
+	 * 	interface Listener {
+	 * 		void event(Integer i, String s);
+	 * 	}
+	 * 
+	 * 	BiPredicate&lt;Listener, String&gt; methodCall =
+	 * 		(l,s) -> l.event(Matchers.any(), s);
+	 * 
+	 * 	EventCollector&lt;Listener, String&gt; collector =
+	 * 		EventCollector.create(Listener.class, methodCall);
+	 * </pre>
+	 * 
+	 * <p>The problem with this example is that it won't work as expected. Specifics of the {@link Mockito} functionality
+	 * require matchers to be created <b>in the same order</b> as matched arguments. And because the matcher specified
+	 * in the predicate by an event collector was created <i>before</i> the one created manually - it still will
+	 * try to match <b>the first</b> argument of the called method.
+	 * 
+	 * <p>But we definitely can put such a loophole to use and allow a "partial collect", but the API gets a bit less
+	 * convenient. Since matchers are required to be created in the same order - user will have to initiate collector
+	 * matcher manually. So {@link BiPredicate} accepted by this method takes an instance of the {@link ArgumentCaptor}
+	 * as a second argument. User will have to call {@link ArgumentCaptor#capture()} on it to specify the argument
+	 * to be collected. Example:
+	 * <pre>
+	 * 	interface Listener {
+	 * 		void event(Integer i, String s);
+	 * 	}
+	 * 
+	 * 	BiPredicate&lt;Listener, ArgumentCaptor&lt;String&gt;&gt; methodCall =
+	 * 		(l,c) -> l.event(Matchers.any(), c.capture());
+	 * 
+	 * 	EventCollector&lt;Listener, String&gt; collector =
+	 * 		EventCollector.createPartial(Listener.class, String.class, methodCall);
+	 * </pre>
+	 * 
+	 * <p>In this example collector's matcher is initiated after the matcher created by the {@link Matchers#any()} call.
+	 * Additional inconvenience is that class of the captured event is also have to be specified,
+	 * since {@link BiPredicate} itself cannot properly guess it from call to a method with multiple arguments.
+	 * But as a result it provides you an interesting functionality (relatively easy to implement) that allows you
+	 * to capture one of the arguments, completely ignoring others (<code>Mockito's</code> {@link Matchers} got
+	 * to be used manually to create matchers for other arguments).
 	 *
 	 * @see #create(Class, BiConsumer, Collection)
 	 * @see #createPartial(Class, Class, BiConsumer, Predicate...)
+	 * @see EventHandler
 	 */
 	public static <T, E> EventCollector<T, E> createPartial(Class<T> targetClass, Class<E> eventClass,
 			BiConsumer<T, ArgumentCaptor<E>> method, Collection<Predicate<? super E>> filters){
