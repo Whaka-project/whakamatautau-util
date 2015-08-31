@@ -175,7 +175,7 @@ public class EventCollector<Target, Event> {
 	private static <E> List<EventHandler<? super E>> selectEventHandlers(Collection<Predicate<? super E>> filters) {
 		return filters.stream()
 				.filter(EventHandler.class::isInstance)
-				.map(EventHandler.class::cast)
+				.map(p -> (EventHandler<? super E>) p)
 				.collect(toList());
 	}
 	
