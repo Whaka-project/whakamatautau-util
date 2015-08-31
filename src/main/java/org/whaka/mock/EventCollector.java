@@ -8,7 +8,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -214,7 +213,6 @@ public class EventCollector<Target, Event> {
 	 * Instances of this handler should be specified to an {@link EventCollector} among other predicate filters.
 	 * 
 	 * @see #eventCollected(Object)
-	 * @see #createCallback(Consumer)
 	 */
 	public interface EventHandler<Event> extends Predicate<Event> {
 
@@ -232,38 +230,5 @@ public class EventCollector<Target, Event> {
 		 * only if all the other filters registered in the same collector will also return <code>true</code>.
 		 */
 		void eventCollected(Event event);
-		
-		/**
-		 * Method allows you to create a "listener" kind of handler that always returns <code>true</code> on test
-		 * and calls specified consumer on {@link #eventCollected(Object)}
-		 */
-		public static <E> EventHandler<E> createCallback(Consumer<E> consumer) {
-			return consumer::accept;
-		}
-		
-		/**
-		 * Equal to the {@link #chain(Collection)} but with vararg for filter predicates.
-		 */
-		@SafeVarargs
-		public static <E> EventHandler<E> chain(Predicate<? super E> ... filters) {
-			return chain(Arrays.asList(filters));
-		}
-		
-		/**
-		 * <p>Create an instance of the {@link EventHandler} that chain specified delegates so that
-		 * next filter is called only if previous one had returned <code>true</code>.
-		 * 
-		 * <p>Handler like this allows you to build complex logic for event filtering;
-		 * e.g. something like: "await 5 seconds" - <b>then</b> "skip 5 events". Since {@link EventCollector}
-		 * calls <b>ALL</b> the registered filters on each event it isn't possible to implement something like this
-		 * with basic functionality.
-		 * 
-		 * <p><b>Note:</b> since {@link EventHandler} is created, and not plain {@link Predicate} - you also can
-		 * specify other handlers as delegates and their {@link #eventCollected(Object)} method will be called
-		 * when the same method of the created handler is called.
-		 */
-		public static <E> EventHandler<E> chain(Collection<Predicate<? super E>> filters) {
-			return new ChainEventHandler<>(filters);
-		}
 	}
 }

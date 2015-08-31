@@ -24,7 +24,7 @@ class ChainEventHandlerTest extends Specification {
 			Predicate filter = Mock()
 			EventHandler filterHandler = Mock()
 		when:
-			def handler = EventHandler.chain(filter, filterHandler)
+			def handler = EventHandlers.chain(filter, filterHandler)
 		then:
 			handler.eventFilters == [filter, filterHandler]
 			handler.eventHandlers == [filterHandler]
@@ -67,7 +67,7 @@ class ChainEventHandlerTest extends Specification {
 			Predicate f2 = Mock()
 			EventHandler h = Mock()
 		and:
-			def handler = EventHandler.chain(f1, f2, h)
+			def handler = EventHandlers.chain(f1, f2, h)
 
 		when:
 			handler.eventCollected("qwe")

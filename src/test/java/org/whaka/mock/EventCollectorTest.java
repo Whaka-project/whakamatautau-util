@@ -238,7 +238,7 @@ public class EventCollectorTest {
 		Mockito.when(handler.test(Matchers.any())).thenReturn(true);
 		
 		EventCollector<Listener, Integer> collector =
-				EventCollector.create(Listener.class, Listener::event, EventHandler.chain(filter, handler));
+				EventCollector.create(Listener.class, Listener::event, EventHandlers.chain(filter, handler));
 		
 		Listener target = collector.getTarget();
 		
@@ -267,7 +267,7 @@ public class EventCollectorTest {
 		Mockito.when(handler.test(Matchers.any())).thenReturn(false);
 		
 		EventCollector<Listener, Integer> collector =
-				EventCollector.create(Listener.class, Listener::event, EventHandler.chain(filter, handler));
+				EventCollector.create(Listener.class, Listener::event, EventHandlers.chain(filter, handler));
 		
 		Listener target = collector.getTarget();
 		
@@ -295,7 +295,7 @@ public class EventCollectorTest {
 		Mockito.when(handler.test(Matchers.any())).thenReturn(true);
 		
 		EventCollector<Listener, Integer> collector =
-				EventCollector.create(Listener.class, Listener::event, EventHandler.chain(filter, handler));
+				EventCollector.create(Listener.class, Listener::event, EventHandlers.chain(filter, handler));
 		
 		Listener target = collector.getTarget();
 		

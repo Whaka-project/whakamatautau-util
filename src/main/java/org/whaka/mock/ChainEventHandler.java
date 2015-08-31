@@ -18,7 +18,7 @@ import com.google.common.collect.ImmutableList;
  * <p>Since this class implements {@link EventHandler} - registered handlers will receive call
  * to the {@link #eventCollected(Object)} method when this handler gets the call.
  */
-class ChainEventHandler<Event> implements EventHandler<Event> {
+public class ChainEventHandler<Event> implements EventHandler<Event> {
 
 	private final List<Predicate<? super Event>> eventFilters;
 	private final List<EventHandler<? super Event>> eventHandlers;
