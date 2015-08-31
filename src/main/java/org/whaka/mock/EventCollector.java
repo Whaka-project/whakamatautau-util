@@ -1,24 +1,26 @@
 package org.whaka.mock;
 
-import static java.util.stream.Collectors.*;
 import static org.whaka.util.UberStreams.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.BiConsumer;
-import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
-import org.mockito.ArgumentCaptor;
-import org.mockito.Matchers;
 import org.mockito.MockSettings;
 import org.mockito.Mockito;
 import org.mockito.invocation.DescribedInvocation;
-import org.whaka.util.reflection.UberClasses;
+import org.mockito.invocation.InvocationOnMock;
+import org.whaka.util.function.Consumer3;
+import org.whaka.util.function.Consumer4;
+import org.whaka.util.function.Consumer5;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
@@ -47,18 +49,46 @@ import com.google.common.collect.ImmutableList;
  * @param <Event>  the event type to be collected
  * 
  * @see #create(Class, BiConsumer, Collection)
- * @see #createPartial(Class, Class, BiConsumer, Collection)
+ * @see #create(Class, EventCombiner, Collection)
  * @see EventHandler
+ * @see EventCombiner
  */
 public class EventCollector<Target, Event> {
 
 	private final Target target;
+	private final DescribedInvocation invocation;
+	private final EventCombiner<Target, Event> combiner;
+	private final List<Predicate<? super Event>> eventFilters;
+	private final List<EventHandler<? super Event>> eventHandlers;
 	private final List<Event> events = new ArrayList<>();
 
-	private EventCollector(Target target) {
-		this.target = target;
+	private EventCollector(Class<Target> targetClass, EventCombiner<Target, Event> combiner,
+			Collection<Predicate<? super Event>> filters) {
+		
+		this.combiner = Objects.requireNonNull(combiner, "Event combiner cannot be null!");
+		this.eventFilters = ImmutableList.copyOf(filters);
+		this.eventHandlers = selectEventHandlers(filters);
+		
+		List<DescribedInvocation> invocations = new ArrayList<>();
+		MockSettings settings = Mockito.withSettings()
+			.invocationListeners(report -> invocations.add(report.getInvocation()));
+		
+		this.target = Mockito.mock(targetClass, settings);
+		combiner.accept(Mockito.doAnswer(this::answer).when(target));
+		
+		if (invocations.size() != 1)
+			throw new IllegalStateException("Single listener interaction was expected! But actual: " + invocations);
+		
+		this.invocation = invocations.get(0);
 	}
-
+	
+	private static <E> List<EventHandler<? super E>> selectEventHandlers(Collection<Predicate<? super E>> filters) {
+		return filters.stream()
+				.filter(EventHandler.class::isInstance)
+				.map(p -> (EventHandler<? super E>) p)
+				.collect(Collectors.toList());
+	}
+	
 	/**
 	 * Equal to the {@link #create(Class, BiConsumer, Collection)} but with vararg for predicate filters.
 	 */
@@ -69,114 +99,66 @@ public class EventCollector<Target, Event> {
 	}
 
 	/**
-	 * Create an event collector that contains mock instance of the specified target class with a one method stubbed.
+	 * <p>Create an event collector that contains mock instance of the specified target class with a one method stubbed.
 	 * Method to be stubbed is indicated by the specified predicate. All the predicates in the specified collection
 	 * will be used to filter out events.
+	 * 
+	 * <p>Usability method. Equal to {@link #create(Class, EventCombiner, Collection)} with EventCombiner
+	 * created using the {@link EventCombiner#create(BiConsumer)} method.
 	 *
 	 * @see #create(Class, BiConsumer, Predicate...)
-	 * @see #createPartial(Class, Class, BiConsumer, Collection)
+	 * @see #create(Class, EventCombiner, Collection)
 	 * @see EventHandler
 	 */
 	public static <T, E> EventCollector<T, E> create(Class<T> targetClass,
 			BiConsumer<T, E> method, Collection<Predicate<? super E>> filters){
-		return EventCollector.<T, E>createPartial(targetClass, UberClasses.cast(Object.class),
-				(l, c) -> method.accept(l, c.capture()), filters);
+		return EventCollector.<T, E>create(targetClass, EventCombiner.create(method), filters);
 	}
 	
 	/**
-	 * Equal to the {@link #createPartial(Class, Class, BiConsumer, Collection)} but with vararg for predicate filters.
+	 * Equal to the {@link #create(Class, EventCombiner, Collection)} but with vararg for predicate filters.
 	 */
 	@SafeVarargs
-	public static <T, E> EventCollector<T, E> createPartial(Class<T> targetClass, Class<E> eventClass,
-			BiConsumer<T, ArgumentCaptor<E>> method, Predicate<? super E> ... filters){
-		return createPartial(targetClass, eventClass, method, Arrays.asList(filters));
+	public static <T, E> EventCollector<T, E> create(Class<T> targetClass,
+			EventCombiner<T, E> captor, Predicate<? super E> ... filters){
+		return create(targetClass, captor, Arrays.asList(filters));
 	}
 	
 	/**
-	 * <p>Pure form of the event collector allows to stub only methods with one argument. But using a {@link BiPredicate}
-	 * to indicate stubbed method allows you to call <i>any</i> method where matcher (passed into a predicate) might
-	 * be passed as one of the multiple arguments. Example:
-	 * <pre>
-	 * 	interface Listener {
-	 * 		void event(Integer i, String s);
-	 * 	}
+	 * <p>Create collector that will contain a mock of the specified target type,
+	 * if will also stub the method represented by the specified {@link EventCombiner},
+	 * and all the events will be filtered by specified predicates.
 	 * 
-	 * 	BiPredicate&lt;Listener, String&gt; methodCall =
-	 * 		(l,s) -> l.event(Matchers.any(), s);
-	 * 
-	 * 	EventCollector&lt;Listener, String&gt; collector =
-	 * 		EventCollector.create(Listener.class, methodCall);
-	 * </pre>
-	 * 
-	 * <p>The problem with this example is that it won't work as expected. Specifics of the {@link Mockito} functionality
-	 * require matchers to be created <b>in the same order</b> as matched arguments. And because the matcher specified
-	 * in the predicate by an event collector was created <i>before</i> the one created manually - it still will
-	 * try to match <b>the first</b> argument of the called method.
-	 * 
-	 * <p>But we definitely can put such a loophole to use and allow a "partial collect", but the API gets a bit less
-	 * convenient. Since matchers are required to be created in the same order - user will have to initiate collector
-	 * matcher manually. So {@link BiPredicate} accepted by this method takes an instance of the {@link ArgumentCaptor}
-	 * as a second argument. User will have to call {@link ArgumentCaptor#capture()} on it to specify the argument
-	 * to be collected. Example:
-	 * <pre>
-	 * 	interface Listener {
-	 * 		void event(Integer i, String s);
-	 * 	}
-	 * 
-	 * 	BiPredicate&lt;Listener, ArgumentCaptor&lt;String&gt;&gt; methodCall =
-	 * 		(l,c) -> l.event(Matchers.any(), c.capture());
-	 * 
-	 * 	EventCollector&lt;Listener, String&gt; collector =
-	 * 		EventCollector.createPartial(Listener.class, String.class, methodCall);
-	 * </pre>
-	 * 
-	 * <p>In this example collector's matcher is initiated after the matcher created by the {@link Matchers#any()} call.
-	 * Additional inconvenience is that class of the captured event is also have to be specified,
-	 * since {@link BiPredicate} itself cannot properly guess it from call to a method with multiple arguments.
-	 * But as a result it provides you an interesting functionality (relatively easy to implement) that allows you
-	 * to capture one of the arguments, completely ignoring others (<code>Mockito's</code> {@link Matchers} got
-	 * to be used manually to create matchers for other arguments).
-	 *
-	 * @see #create(Class, BiConsumer, Collection)
-	 * @see #createPartial(Class, Class, BiConsumer, Predicate...)
-	 * @see EventHandler
+	 * @see EventCombiner#create(Consumer3)
+	 * @see EventCombiner#create(Consumer4)
+	 * @see EventCombiner#create(Consumer5)
+	 * @see EventCombiner#forCaptor(BiConsumer)
 	 */
-	public static <T, E> EventCollector<T, E> createPartial(Class<T> targetClass, Class<E> eventClass,
-			BiConsumer<T, ArgumentCaptor<E>> method, Collection<Predicate<? super E>> filters){
-
-		List<EventHandler<? super E>> eventHandlers = selectEventHandlers(filters);
-		
-		List<DescribedInvocation> invokes = new ArrayList<>();
-		MockSettings settings = Mockito.withSettings()
-				.invocationListeners(report -> invokes.add(report.getInvocation()));
-		
-		T target = Mockito.mock(targetClass, settings);
-		EventCollector<T, E> collector = new EventCollector<>(target);
-
-		ArgumentCaptor<E> captor = ArgumentCaptor.forClass(eventClass);
-		method.accept(Mockito.doAnswer(invoke -> {
-			E event = captor.getValue();
-			synchronized (collector.events) {
-				boolean filterFail = stream(filters).map(p -> p.test(event)).toSet().contains(false);
-				if (!filterFail) {
-					collector.events.add(event);
-					eventHandlers.forEach(c -> c.eventCollected(event));
-				}
-			}
-			return null;
-		}).when(target), captor);
-		
-		if (invokes.size() != 1)
-			throw new IllegalStateException("Single listener interaction was expected! But actual: " + invokes);
-		
-		return collector;
+	public static <T, E> EventCollector<T, E> create(Class<T> targetClass,
+			EventCombiner<T, E> captor, Collection<Predicate<? super E>> filters){
+		return new EventCollector<>(targetClass, captor, filters);
 	}
 	
-	private static <E> List<EventHandler<? super E>> selectEventHandlers(Collection<Predicate<? super E>> filters) {
-		return filters.stream()
-				.filter(EventHandler.class::isInstance)
-				.map(p -> (EventHandler<? super E>) p)
-				.collect(toList());
+	/**
+	 * Method is called when stubbed method is called upon target.
+	 */
+	private Object answer(InvocationOnMock invoke) {
+		Event event = combiner.getValue();
+		synchronized (events) {
+			if (testEvent(event)) {
+				events.add(event);
+				eventHandlers.forEach(c -> c.eventCollected(event));
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * Returns <code>true</code> if <b>ALL</b> registered event filters returned <code>true</code>
+	 * for the specified event.
+	 */
+	private boolean testEvent(Event e) {
+		return !stream(eventFilters).map(p -> p.test(e)).toSet().contains(false);
 	}
 	
 	/**
@@ -185,7 +167,7 @@ public class EventCollector<Target, Event> {
 	public Target getTarget() {
 		return target;
 	}
-
+	
 	/**
 	 * Number of events collected so far.
 	 */
@@ -214,6 +196,17 @@ public class EventCollector<Target, Event> {
 			Preconditions.checkState(!events.isEmpty(), "No events were captured!");
 			return events.get(events.size() - 1);
 		}
+	}
+	
+	@Override
+	public String toString() {
+		return MoreObjects.toStringHelper(this)
+				.add("target", getTarget())
+				.add("stub", invocation)
+				.add("combiner", combiner)
+				.add("filters", eventFilters.size())
+				.add("handlers", eventHandlers.size())
+				.toString();
 	}
 
 	/**

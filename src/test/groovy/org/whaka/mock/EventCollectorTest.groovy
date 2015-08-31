@@ -5,13 +5,11 @@ import java.util.function.Predicate
 
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers
-import org.whaka.mock.EventCollector.EventHandler
+import org.whaka.util.function.Consumer3
+import org.whaka.util.function.Tuple2
 
 import spock.lang.Specification
 
-/**
- * @author gdzabaev
- */
 class EventCollectorTest extends Specification {
 
     def "all filters are called" () {
@@ -34,26 +32,6 @@ class EventCollectorTest extends Specification {
 			0 * filterEH.test(_)
     }
 
-	def "partial: all filters are called" () {
-		given:
-			Predicate<String> filter = Mock()
-			EventHandler<String> filterEH = Mock()
-			def collector = createPartialCollector(filter, filterEH)
-			Listener l = collector.getTarget()
-		when:
-			l.event2(100, "qwe")
-			l.event2(200, "rty")
-		then:
-			1 * filter.test("qwe") >> true
-			1 * filterEH.test("qwe") >> true
-		and:
-			1 * filter.test("rty") >> false
-			1 * filterEH.test("rty") >> false
-		and:
-			0 * filter.test(_)
-			0 * filterEH.test(_)
-	}
-
     def "eventCollected is called" () {
         given:
             Predicate<Integer> filter = Mock()
@@ -71,26 +49,6 @@ class EventCollectorTest extends Specification {
             1 * filterEH.eventCollected(200)
     }
 
-	def "partial: eventCollected is called" () {
-		given:
-			Predicate<String> filter = Mock()
-			EventHandler<String> filterEH = Mock()
-			def collector = createPartialCollector(filter, filterEH)
-			Listener l = collector.getTarget()
-		when:
-			l.event2(100, "qwe")
-			l.event2(200, "rty")
-		then:
-			2 * filter.test(_) >> true
-			2 * filterEH.test(_) >> true
-		and:
-			1 * filterEH.eventCollected("qwe")
-		and:
-			1 * filterEH.eventCollected("rty")
-		and:
-			0 * filterEH.eventCollected(_)
-	}
-
     def "eventCollected is not called" () {
         given:
             Predicate<Integer> filter = Mock()
@@ -106,22 +64,6 @@ class EventCollectorTest extends Specification {
         and:
             0 * filterEH.eventCollected(_)
     }
-
-	def "partial: eventCollected is not called" () {
-		given:
-			Predicate<String> filter = Mock()
-			EventHandler<String> filterEH = Mock()
-			def collector = createPartialCollector(filter, filterEH)
-			Listener l = collector.getTarget()
-		when:
-			l.event2(100, "qwe")
-			l.event2(200, "rty")
-		then:
-			2 * filter.test(_) >> false
-			2 * filterEH.test(_) >> true
-		and:
-			0 * filterEH.eventCollected(_)
-	}
 
     def "events are collected" (){
         given:
@@ -143,53 +85,76 @@ class EventCollectorTest extends Specification {
 			collector.getLastEvent() == 300
     }
 
-	def "partial: events are collected" (){
-		given:
-			Predicate<String> filter = Mock()
-			EventHandler<String> filterEH = Mock()
-			def collector = createPartialCollector(filter, filterEH)
-			Listener l = collector.getTarget()
-		when:
-			l.event2(100, "qwe")
-			l.event2(200, "rty")
-			l.event2(300, "qaz")
-		then:
-			1 * filter.test("qwe") >> false
-			2 * filter.test(_) >> true
-			3 * filterEH.test(_) >> true
-		and:
-			collector.size() == 2
-			collector.getEvents().containsAll(["rty", "qaz"])
-			collector.getLastEvent() == "qaz"
-	}
-
 	def "last event: exception"() {
 		given:
-			EventCollector<Listener, ?> collector = _collector
+			EventCollector<Listener, ?> collector = createCollector()
 		when:
 			collector.getLastEvent()
 		then:
 			thrown(IllegalStateException)
-		where:
-			_collector << [
-			    createCollector(),
-				createPartialCollector(),
-			]
 	}
 
 	@SuppressWarnings("rawtypes")
 	private static EventCollector<Listener, Integer> createCollector(Predicate<Integer>[] filters) {
-		BiConsumer<Listener, Integer> method = {l,e -> l.event(e)}
+		BiConsumer<Listener, Integer> method = {Listener l, e -> l.event(e)}
 		return EventCollector.create(Listener.class, method, filters)
 	}
 
-	@SuppressWarnings("rawtypes")
-	private static EventCollector<Listener, String> createPartialCollector(Predicate<String>[] filters) {
-		BiConsumer<Listener, ArgumentCaptor<String>> method = {l,c -> l.event2(Matchers.any(), c.capture())}
-		return EventCollector.createPartial(Listener.class, String.class, method, filters)
+	def "EventCombiner: capture selective"() {
+		given:
+			EventCombiner<Listener, String> combiner =
+				EventCombiner.forCaptor({Listener l, ArgumentCaptor<String> c -> l.event2(Matchers.any(), c.capture())})
+		and:
+			Predicate<String> filter = Mock()
+			EventCollector<Listener, String> collector = EventCollector.create(Listener.class, combiner, filter)
+
+		when:
+			collector.getTarget().event2(42, "qwe")
+		then:
+			1 * filter.test("qwe") >> true
+
+		when:
+			collector.getTarget().event2(12, "rty")
+		then:
+			1 * filter.test("rty") >> false
+
+		when:
+			collector.getTarget().event(100)
+		then:
+			0 * filter.test(_)
+
+		expect:
+			collector.getEvents() == ["qwe"]
 	}
 
-    private interface Listener {
+	def "EventCombiner: capture two arguments"() {
+		given:
+			Consumer3<Listener, Integer, String> methodCall = {Listener l, i, s -> l.event2(i,s)}
+			EventCombiner<Listener, Tuple2<Integer, String>> combiner = EventCombiner.create(methodCall)
+		and:
+			Predicate<Tuple2<Integer, String>> filter = Mock()
+			EventCollector<Listener, Tuple2<Integer, String>> collector = EventCollector.create(Listener.class, combiner, filter)
+
+		when:
+			collector.getTarget().event2(42, "qwe")
+		then:
+			1 * filter.test(Tuple2.tuple2(42, "qwe")) >> true
+
+		when:
+			collector.getTarget().event2(12, "rty")
+		then:
+			1 * filter.test(Tuple2.tuple2(12, "rty")) >> false
+
+		when:
+			collector.getTarget().event(100)
+		then:
+			0 * filter.test(_)
+
+		expect:
+			collector.getEvents() == [Tuple2.tuple2(42, "qwe")]
+	}
+
+    public static interface Listener {
         void event(Integer i)
         void event2(Integer i, String s)
     }
