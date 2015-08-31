@@ -16,10 +16,9 @@ class EventCollectorTest extends Specification {
 
     def "all filters are called" () {
         given:
-            BiConsumer<Listener, Integer> method = {l,e -> l.event(e)}
             Predicate<Integer> filter = Mock()
             EventCollector.EventHandler<Integer> filterEH = Mock()
-            def collector = EventCollector.create(Listener.class, method, filter, filterEH)
+            def collector = createCollector(filter, filterEH)
             Listener l = collector.getTarget()
         when:
             l.event(100)
@@ -37,10 +36,9 @@ class EventCollectorTest extends Specification {
 
 	def "partial: all filters are called" () {
 		given:
-			BiConsumer<Listener, ArgumentCaptor<String>> method = {l,c -> l.event2(Matchers.any(), c.capture())}
 			Predicate<String> filter = Mock()
 			EventHandler<String> filterEH = Mock()
-			def collector = EventCollector.createPartial(Listener.class, String.class, method, filter, filterEH)
+			def collector = createPartialCollector(filter, filterEH)
 			Listener l = collector.getTarget()
 		when:
 			l.event2(100, "qwe")
@@ -58,10 +56,9 @@ class EventCollectorTest extends Specification {
 
     def "eventCollected is called" () {
         given:
-            BiConsumer<Listener, Integer> method = {l,e -> l.event(e)}
             Predicate<Integer> filter = Mock()
             EventCollector.EventHandler<Integer> filterEH = Mock()
-            def collector = EventCollector.create(Listener.class, method, filter, filterEH)
+            def collector = createCollector(filter, filterEH)
             Listener l = collector.getTarget()
         when:
             l.event(100)
@@ -76,10 +73,9 @@ class EventCollectorTest extends Specification {
 
 	def "partial: eventCollected is called" () {
 		given:
-			BiConsumer<Listener, ArgumentCaptor<String>> method = {l,c -> l.event2(Matchers.any(), c.capture())}
 			Predicate<String> filter = Mock()
 			EventHandler<String> filterEH = Mock()
-			def collector = EventCollector.createPartial(Listener.class, String.class, method, filter, filterEH)
+			def collector = createPartialCollector(filter, filterEH)
 			Listener l = collector.getTarget()
 		when:
 			l.event2(100, "qwe")
@@ -97,10 +93,9 @@ class EventCollectorTest extends Specification {
 
     def "eventCollected is not called" () {
         given:
-            BiConsumer<Listener, Integer> method = {l,e -> l.event(e)}
             Predicate<Integer> filter = Mock()
             EventCollector.EventHandler<Integer> filterEH = Mock()
-            def collector = EventCollector.create(Listener.class, method, filter, filterEH)
+            def collector = createCollector(filter, filterEH)
             Listener l = collector.getTarget()
         when:
             l.event(100)
@@ -114,10 +109,9 @@ class EventCollectorTest extends Specification {
 
 	def "partial: eventCollected is not called" () {
 		given:
-			BiConsumer<Listener, ArgumentCaptor<String>> method = {l,c -> l.event2(Matchers.any(), c.capture())}
 			Predicate<String> filter = Mock()
 			EventHandler<String> filterEH = Mock()
-			def collector = EventCollector.createPartial(Listener.class, String.class, method, filter, filterEH)
+			def collector = createPartialCollector(filter, filterEH)
 			Listener l = collector.getTarget()
 		when:
 			l.event2(100, "qwe")
@@ -131,10 +125,9 @@ class EventCollectorTest extends Specification {
 
     def "events are collected" (){
         given:
-            BiConsumer<Listener, Integer> method = {l,e -> l.event(e)}
             Predicate<Integer> filter = Mock()
             EventCollector.EventHandler<Integer> filterEH = Mock()
-            def collector = EventCollector.create(Listener.class, method, filter, filterEH)
+            def collector = createCollector(filter, filterEH)
             Listener l = collector.getTarget()
         when:
             l.event(100)
@@ -145,16 +138,16 @@ class EventCollectorTest extends Specification {
             2 * filter.test(_) >> true
             3 * filterEH.test(_) >> true
         and:
-            collector.events.size() == 2
-            collector.events.containsAll([100, 300])
+            collector.size() == 2
+            collector.getEvents().containsAll([100, 300])
+			collector.getLastEvent() == 300
     }
 
 	def "partial: events are collected" (){
 		given:
-			BiConsumer<Listener, ArgumentCaptor<String>> method = {l,c -> l.event2(Matchers.any(), c.capture())}
 			Predicate<String> filter = Mock()
 			EventHandler<String> filterEH = Mock()
-			def collector = EventCollector.createPartial(Listener.class, String.class, method, filter, filterEH)
+			def collector = createPartialCollector(filter, filterEH)
 			Listener l = collector.getTarget()
 		when:
 			l.event2(100, "qwe")
@@ -165,8 +158,35 @@ class EventCollectorTest extends Specification {
 			2 * filter.test(_) >> true
 			3 * filterEH.test(_) >> true
 		and:
-			collector.events.size() == 2
-			collector.events.containsAll(["rty", "qaz"])
+			collector.size() == 2
+			collector.getEvents().containsAll(["rty", "qaz"])
+			collector.getLastEvent() == "qaz"
+	}
+
+	def "last event: exception"() {
+		given:
+			EventCollector<Listener, ?> collector = _collector
+		when:
+			collector.getLastEvent()
+		then:
+			thrown(IllegalStateException)
+		where:
+			_collector << [
+			    createCollector(),
+				createPartialCollector(),
+			]
+	}
+
+	@SuppressWarnings("rawtypes")
+	private static EventCollector<Listener, Integer> createCollector(Predicate<Integer>[] filters) {
+		BiConsumer<Listener, Integer> method = {l,e -> l.event(e)}
+		return EventCollector.create(Listener.class, method, filters)
+	}
+
+	@SuppressWarnings("rawtypes")
+	private static EventCollector<Listener, String> createPartialCollector(Predicate<String>[] filters) {
+		BiConsumer<Listener, ArgumentCaptor<String>> method = {l,c -> l.event2(Matchers.any(), c.capture())}
+		return EventCollector.createPartial(Listener.class, String.class, method, filters)
 	}
 
     private interface Listener {
