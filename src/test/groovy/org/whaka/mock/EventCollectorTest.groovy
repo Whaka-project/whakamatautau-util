@@ -5,13 +5,12 @@ import java.util.function.Predicate
 
 import org.mockito.ArgumentCaptor
 import org.mockito.Matchers
+import org.whaka.mock.EventCombinerJavaTest.Listener
 import org.whaka.util.function.Consumer3
 import org.whaka.util.function.Tuple2
 
-import spock.lang.Ignore
 import spock.lang.Specification
 
-@Ignore
 class EventCollectorTest extends Specification {
 
     def "all filters are called" () {
@@ -155,9 +154,4 @@ class EventCollectorTest extends Specification {
 		expect:
 			collector.getEvents() == [Tuple2.tuple2(42, "qwe")]
 	}
-
-    public static interface Listener {
-        void event(Integer i)
-        void event2(Integer i, String s)
-    }
 }

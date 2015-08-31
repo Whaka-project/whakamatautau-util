@@ -6,10 +6,8 @@ import java.util.function.Function
 import org.whaka.util.function.Consumer3
 import org.whaka.util.function.Consumer4
 
-import spock.lang.Ignore
 import spock.lang.Specification
 
-@Ignore
 class EventCombinerTest extends Specification {
 
 	def "for captors"() {

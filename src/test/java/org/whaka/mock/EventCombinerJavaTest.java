@@ -38,13 +38,13 @@ public class EventCombinerJavaTest {
 		Mockito.when(combinator.apply(Matchers.any())).then(invoke -> {
 			Object[] arr = invoke.getArgumentAt(0, Object[].class);
 			Assert.assertThat(arr, arrayWithSize(2));
-			Assert.assertThat(arr[0], equalTo("qwe"));
-			Assert.assertThat(arr[1], equalTo(42));
+			Assert.assertThat(arr[0], equalTo(42));
+			Assert.assertThat(arr[1], equalTo("qwe"));
 			return "combined result";
 		});
 		
 		BiConsumer<Listener, ArgumentCaptor<?>[]> methodCall = (target, captors) ->
-			target.event2((String)captors[0].capture(), (Integer)captors[1].capture());
+			target.event2((Integer)captors[0].capture(), (String)captors[1].capture());
 			
 		EventCombiner<Listener, String> combiner = EventCombiner.forCaptors(2, methodCall, combinator);
 
@@ -53,7 +53,7 @@ public class EventCombinerJavaTest {
 		
 		// when:
 
-		target.event2("qwe", 42);
+		target.event2(42, "qwe");
 		String res = combiner.getValue();
 		
 		// then:
@@ -67,23 +67,24 @@ public class EventCombinerJavaTest {
 		
 		// given:
 		
-		EventCombiner<Listener, Tuple2<String, Integer>> combiner = EventCombiner.create(Listener::event2);
+		EventCombiner<Listener, Tuple2<Integer, String>> combiner = EventCombiner.create(Listener::event2);
 		
 		Listener target = Mockito.mock(Listener.class);
 		combiner.accept(Mockito.doNothing().when(target));
 		
 		// when:
 		
-		target.event2("qwe", 42);
-		Tuple2<String, Integer> res = combiner.getValue();
+		target.event2(42, "qwe");
+		Tuple2<Integer, String> res = combiner.getValue();
 		
 		// then:
 		
-		Assert.assertThat(res._1, equalTo("qwe"));
-		Assert.assertThat(res._2, equalTo(42));
+		Assert.assertThat(res._1, equalTo(42));
+		Assert.assertThat(res._2, equalTo("qwe"));
 	}
 	
 	public static interface Listener {
-		void event2(String s, Integer i);
-	}
+        void event(Integer i);
+        void event2(Integer i, String s);
+    }
 }
