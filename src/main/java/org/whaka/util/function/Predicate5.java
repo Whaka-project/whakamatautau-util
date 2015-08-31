@@ -7,31 +7,28 @@ import java.util.function.Predicate;
 /**
  * <p>Equal to {@link BiPredicate} but with 5 arguments.
  * 
- * @see #toPredicate()
- * @see #toBiPredicate()
+ * @see #toPredicate(Predicate5)
+ * @see #toBiPredicate(Predicate5)
  */
+@FunctionalInterface
 public interface Predicate5<A,B,C,D,E> {
 
 	boolean test(A a, B b, C c, D d, E e);
 	
 	/**
-	 * Converts this predicate into a {@link Predicate} were all arguments are represented
+	 * Converts specified predicate into a {@link Predicate} were all arguments are represented
 	 * as a single {@link Tuple5} instance.
-	 * 
-	 * @see #toBiPredicate()
 	 */
-	default Predicate<Tuple5<A, B, C, D, E>> toPredicate() {
-		return e -> test(e._1, e._2, e._3, e._4, e._5);
+	static <A,B,C,D,E> Predicate<Tuple5<A, B, C, D, E>> toPredicate(Predicate5<A, B, C, D, E> delegate) {
+		return e -> delegate.test(e._1, e._2, e._3, e._4, e._5);
 	}
 	
 	/**
-	 * Converts this predicate into a {@link BiPredicate} were all arguments except the first one are represented
+	 * Converts specified predicate into a {@link BiPredicate} were all arguments except the first one are represented
 	 * as a single {@link Tuple3} instance.
-	 * 
-	 * @see #toConsumer()
 	 */
-	default BiPredicate<A, Tuple4<B, C, D, E>> toBiPredicate() {
-		return (a,e) -> test(a, e._1, e._2, e._3, e._4);
+	static <A,B,C,D,E> BiPredicate<A, Tuple4<B, C, D, E>> toBiPredicate(Predicate5<A, B, C, D, E> delegate) {
+		return (a,e) -> delegate.test(a, e._1, e._2, e._3, e._4);
 	}
 	
 	default Predicate5<A, B, C, D, E> and(Predicate5<? super A, ? super B, ? super C, ? super D, ? super E> other) {

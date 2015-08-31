@@ -6,25 +6,29 @@ import java.util.function.Function;
 
 /**
  * <p>Equal to {@link BiFunction} but with 5 arguments.
+ * 
+ * @see #toFunction(Function5)
+ * @see #toBiFunction(Function5)
  */
+@FunctionalInterface
 public interface Function5<A,B,C,D,E,R> {
 
 	R apply(A a, B b, C c, D d, E e);
 	
 	/**
-	 * Convert this function to the {@link Function} were all arguments are represented
+	 * Convert specified function to the {@link Function} were all arguments are represented
 	 * as a single {@link Tuple5} instance.
 	 */
-	default Function<Tuple5<A, B, C, D, E>, R> toFunction() {
-		return e -> apply(e._1, e._2, e._3, e._4, e._5);
+	static <A,B,C,D,E,R> Function<Tuple5<A, B, C, D, E>, R> toFunction(Function5<A, B, C, D, E, R> delegate) {
+		return e -> delegate.apply(e._1, e._2, e._3, e._4, e._5);
 	}
 	
 	/**
-	 * Convert this function to the {@link BiFunction} were all arguments except the thirst one are represented
+	 * Convert specified function to the {@link BiFunction} were all arguments except the thirst one are represented
 	 * as a single {@link Tuple4} instance.
 	 */
-	default BiFunction<A, Tuple4<B, C, D, E>, R> toBiFunction() {
-		return (a,e) -> apply(a, e._1, e._2, e._3, e._4);
+	static <A,B,C,D,E,R> BiFunction<A, Tuple4<B, C, D, E>, R> toBiFunction(Function5<A, B, C, D, E, R> delegate) {
+		return (a,e) -> delegate.apply(a, e._1, e._2, e._3, e._4);
 	}
 	
 	default <V> Function5<A, B, C, D, E, V> andThen(Function<? super R, ? extends V> then) {

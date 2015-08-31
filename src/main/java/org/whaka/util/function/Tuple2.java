@@ -11,7 +11,7 @@ import com.google.common.base.MoreObjects;
  * <p>Values might be accessed directly: {@link #_1} and {@link #_2},
  * or thru getters: {@link #get_1()} and {@link #get_2()}.
  * 
- * <p>Class also implements {@link Map.Entry}, so getters:
+ * <p>Class also implements {@link java.util.Map.Entry}, so getters:
  * {@link #getKey()} and {@link #getValue()} are available.
  * 
  * @see #tuple2(Object, Object)

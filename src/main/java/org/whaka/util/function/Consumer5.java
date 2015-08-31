@@ -7,8 +7,8 @@ import java.util.function.Consumer;
 /**
  * Equal to {@link BiConsumer}, but with 5 arguments.
  * 
- * @see #toConsumer()
- * @see #toBiConsumer()
+ * @see #toConsumer(Consumer5)
+ * @see #toBiConsumer(Consumer5)
  */
 @FunctionalInterface
 public interface Consumer5<A,B,C,D,E> {
@@ -16,23 +16,19 @@ public interface Consumer5<A,B,C,D,E> {
 	void accept(A a, B b, C c, D d, E e);
 	
 	/**
-	 * Converts this consumer into a {@link Consumer} were all arguments are represented
+	 * Converts specified consumer into a {@link Consumer} were all arguments are represented
 	 * as a single {@link Tuple5} instance.
-	 * 
-	 * @see #toBiConsumer()
 	 */
-	default Consumer<Tuple5<A, B, C, D, E>> toConsumer() {
-		return e -> accept(e._1, e._2, e._3, e._4, e._5);
+	static <A,B,C,D,E> Consumer<Tuple5<A, B, C, D, E>> toConsumer(Consumer5<A, B, C, D, E> delegate) {
+		return e -> delegate.accept(e._1, e._2, e._3, e._4, e._5);
 	}
 	
 	/**
-	 * Converts this consumer into a {@link BiConsumer} were all arguments except the first one are represented
+	 * Converts specified consumer into a {@link BiConsumer} were all arguments except the first one are represented
 	 * as a single {@link Tuple4} instance.
-	 * 
-	 * @see #toConsumer()
 	 */
-	default BiConsumer<A, Tuple4<B, C, D, E>> toBiConsumer() {
-		return (a, e) -> accept(a, e._1, e._2, e._3, e._4);
+	static <A,B,C,D,E> BiConsumer<A, Tuple4<B, C, D, E>> toBiConsumer(Consumer5<A, B, C, D, E> delegate) {
+		return (a, e) -> delegate.accept(a, e._1, e._2, e._3, e._4);
 	}
 	
 	default Consumer5<A, B, C, D, E> andThen(Consumer5<? super A, ? super B, ? super C, ? super D, ? super E> after) {

@@ -7,9 +7,10 @@ import java.util.function.Predicate;
 /**
  * <p>Equal to {@link BiPredicate} but with 3 arguments.
  * 
- * @see #toPredicate()
- * @see #toBiPredicate()
+ * @see #toPredicate(Predicate3)
+ * @see #toBiPredicate(Predicate3)
  */
+@FunctionalInterface
 public interface Predicate3<A,B,C> {
 
 	boolean test(A a, B b, C c);
@@ -17,21 +18,17 @@ public interface Predicate3<A,B,C> {
 	/**
 	 * Converts this predicate into a {@link Predicate} were all arguments are represented
 	 * as a single {@link Tuple3} instance.
-	 * 
-	 * @see #toBiPredicate()
 	 */
-	default Predicate<Tuple3<A, B, C>> toPredicate() {
-		return e -> test(e._1, e._2, e._3);
+	static <A,B,C> Predicate<Tuple3<A, B, C>> toPredicate(Predicate3<A, B, C> delegate) {
+		return e -> delegate.test(e._1, e._2, e._3);
 	}
 	
 	/**
-	 * Converts this predicate into a {@link BiPredicate} were all arguments except the first one are represented
+	 * Converts specified predicate into a {@link BiPredicate} were all arguments except the first one are represented
 	 * as a single {@link Tuple2} instance.
-	 * 
-	 * @see #toConsumer()
 	 */
-	default BiPredicate<A, Tuple2<B, C>> toBiPredicate() {
-		return (a,e) -> test(a, e._1, e._2);
+	static <A,B,C> BiPredicate<A, Tuple2<B, C>> toBiPredicate(Predicate3<A, B, C> delegate) {
+		return (a,e) -> delegate.test(a, e._1, e._2);
 	}
 	
 	default Predicate3<A, B, C> and(Predicate3<? super A, ? super B, ? super C> other) {
