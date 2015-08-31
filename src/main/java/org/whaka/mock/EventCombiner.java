@@ -166,7 +166,12 @@ public class EventCombiner<Target, Event> implements Consumer<Target> {
 			Function<Object[], E> combiner) {
 		Objects.requireNonNull(methodCall, "Method call cannot be null!");
 		return forCaptors(numberOfEvents,
-				(t, captors) -> methodCall.accept(t, stream(captors).map(c -> c.capture()).toArray()),
+				(t, captors) -> {
+					Object[] arr = new Object[captors.length];
+					for (int i = 0; i < arr.length; i++)
+						arr[i] = captors[i].capture();
+					methodCall.accept(t, arr);
+				},
 				combiner);
 	}
 	
