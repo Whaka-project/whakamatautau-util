@@ -3,7 +3,10 @@ package org.whaka.mock
 import java.util.function.BiConsumer
 import java.util.function.Predicate
 
-import org.whaka.mock.EventCollector.EventHandler
+import org.mockito.ArgumentCaptor
+import org.mockito.Matchers
+import org.whaka.util.function.Consumer3
+import org.whaka.util.function.Tuple2
 
 import spock.lang.Specification
 
@@ -96,8 +99,62 @@ class EventCollectorTest extends Specification {
 
 	@SuppressWarnings("rawtypes")
 	private static EventCollector<Listener, Integer> createCollector(Predicate<Integer>[] filters) {
-		BiConsumer<Listener, Integer> method = {l,e -> l.event(e)}
-		return EventCollector.create(Listener.class, method, filters)
+		BiConsumer<Listener, Integer> method = {Listener l, e -> l.event(e)}
+		return EventCollector.create(Listener, method, filters)
+	}
+
+	def "EventCombiner: capture selective"() {
+		given:
+			EventCombiner<Listener, String> combiner =
+				EventCombiner.forCaptor({Listener l, ArgumentCaptor<String> c -> l.event2(Matchers.any(), c.capture())})
+		and:
+			Predicate<String> filter = Mock()
+			EventCollector<Listener, String> collector = EventCollector.create(Listener, combiner, filter)
+
+		when:
+			collector.getTarget().event2(42, "qwe")
+		then:
+			1 * filter.test("qwe") >> true
+
+		when:
+			collector.getTarget().event2(12, "rty")
+		then:
+			1 * filter.test("rty") >> false
+
+		when:
+			collector.getTarget().event(100)
+		then:
+			0 * filter.test(_)
+
+		expect:
+			collector.getEvents() == ["qwe"]
+	}
+
+	def "EventCombiner: capture two arguments"() {
+		given:
+			Consumer3<Listener, Integer, String> methodCall = {Listener l, i, s -> l.event2(i,s)}
+			EventCombiner<Listener, Tuple2<Integer, String>> combiner = EventCombiner.create(methodCall)
+		and:
+			Predicate<Tuple2<Integer, String>> filter = Mock()
+			EventCollector<Listener, Tuple2<Integer, String>> collector = EventCollector.create(Listener, combiner, filter)
+
+		when:
+			collector.getTarget().event2(42, "qwe")
+		then:
+			1 * filter.test(Tuple2.tuple2(42, "qwe")) >> true
+
+		when:
+			collector.getTarget().event2(12, "rty")
+		then:
+			1 * filter.test(Tuple2.tuple2(12, "rty")) >> false
+
+		when:
+			collector.getTarget().event(100)
+		then:
+			0 * filter.test(_)
+
+		expect:
+			collector.getEvents() == [Tuple2.tuple2(42, "qwe")]
 	}
 
     private interface Listener {

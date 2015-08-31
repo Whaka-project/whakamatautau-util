@@ -16,6 +16,9 @@ import org.mockito.MockSettings;
 import org.mockito.Mockito;
 import org.mockito.invocation.DescribedInvocation;
 import org.mockito.invocation.InvocationOnMock;
+import org.whaka.util.function.Consumer3;
+import org.whaka.util.function.Consumer4;
+import org.whaka.util.function.Consumer5;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
@@ -96,9 +99,12 @@ public class EventCollector<Target, Event> {
 	}
 
 	/**
-	 * Create an event collector that contains mock instance of the specified target class with a one method stubbed.
+	 * <p>Create an event collector that contains mock instance of the specified target class with a one method stubbed.
 	 * Method to be stubbed is indicated by the specified predicate. All the predicates in the specified collection
 	 * will be used to filter out events.
+	 * 
+	 * <p>Usability method. Equal to {@link #create(Class, EventCombiner, Collection)} with EventCombiner
+	 * created using the {@link EventCombiner#create(BiConsumer)} method.
 	 *
 	 * @see #create(Class, BiConsumer, Predicate...)
 	 * @see #create(Class, EventCombiner, Collection)
@@ -119,7 +125,14 @@ public class EventCollector<Target, Event> {
 	}
 	
 	/**
+	 * <p>Create collector that will contain a mock of the specified target type,
+	 * if will also stub the method represented by the specified {@link EventCombiner},
+	 * and all the events will be filtered by specified predicates.
 	 * 
+	 * @see EventCombiner#create(Consumer3)
+	 * @see EventCombiner#create(Consumer4)
+	 * @see EventCombiner#create(Consumer5)
+	 * @see EventCombiner#forCaptor(BiConsumer)
 	 */
 	public static <T, E> EventCollector<T, E> create(Class<T> targetClass,
 			EventCombiner<T, E> captor, Collection<Predicate<? super E>> filters){
