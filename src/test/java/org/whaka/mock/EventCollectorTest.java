@@ -226,6 +226,90 @@ public class EventCollectorTest {
 		Assert.assertThat(collector.getLastEvent(), equalTo(tuple2(42, "qwe")));
 	}
 	
+	@Test
+	public void ChainHandler_eventCollected_is_called() {
+		
+		// given:
+		
+		Predicate<Integer> filter = Mockito.mock(UberClasses.cast(Predicate.class));
+		EventHandler<Integer> handler = Mockito.mock(UberClasses.cast(EventHandler.class));
+		
+		Mockito.when(filter.test(Matchers.any())).thenReturn(true);
+		Mockito.when(handler.test(Matchers.any())).thenReturn(true);
+		
+		EventCollector<Listener, Integer> collector =
+				EventCollector.create(Listener.class, Listener::event, EventHandler.chain(filter, handler));
+		
+		Listener target = collector.getTarget();
+		
+		// when
+		
+		target.event(100);
+		
+		// then
+		
+		InOrder order = Mockito.inOrder(filter, handler);
+		order.verify(filter, Mockito.times(1)).test(100);
+		order.verify(handler, Mockito.times(1)).test(100);
+		order.verify(handler, Mockito.times(1)).eventCollected(100);
+		order.verifyNoMoreInteractions();
+	}
+	
+	@Test
+	public void ChainHandler_eventCollected_is_NOT_called() {
+		
+		// given:
+		
+		Predicate<Integer> filter = Mockito.mock(UberClasses.cast(Predicate.class));
+		EventHandler<Integer> handler = Mockito.mock(UberClasses.cast(EventHandler.class));
+		
+		Mockito.when(filter.test(Matchers.any())).thenReturn(true);
+		Mockito.when(handler.test(Matchers.any())).thenReturn(false);
+		
+		EventCollector<Listener, Integer> collector =
+				EventCollector.create(Listener.class, Listener::event, EventHandler.chain(filter, handler));
+		
+		Listener target = collector.getTarget();
+		
+		// when
+		
+		target.event(100);
+		
+		// then
+		
+		InOrder order = Mockito.inOrder(filter, handler);
+		order.verify(filter, Mockito.times(1)).test(100);
+		order.verify(handler, Mockito.times(1)).test(100);
+		order.verifyNoMoreInteractions();
+	}
+	
+	@Test
+	public void ChainHandler_is_NOT_called() {
+		
+		// given:
+		
+		Predicate<Integer> filter = Mockito.mock(UberClasses.cast(Predicate.class));
+		EventHandler<Integer> handler = Mockito.mock(UberClasses.cast(EventHandler.class));
+		
+		Mockito.when(filter.test(Matchers.any())).thenReturn(false);
+		Mockito.when(handler.test(Matchers.any())).thenReturn(true);
+		
+		EventCollector<Listener, Integer> collector =
+				EventCollector.create(Listener.class, Listener::event, EventHandler.chain(filter, handler));
+		
+		Listener target = collector.getTarget();
+		
+		// when
+		
+		target.event(100);
+		
+		// then
+		
+		InOrder order = Mockito.inOrder(filter, handler);
+		order.verify(filter, Mockito.times(1)).test(100);
+		order.verifyNoMoreInteractions();
+	}
+	
 	@SafeVarargs
 	private static EventCollector<Listener, Integer> createCollector(Predicate<Integer> ... filters) {
 		return EventCollector.create(Listener.class, Listener::event, filters);
