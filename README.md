@@ -9,6 +9,7 @@ Bunch of tools that we've found usable for extended automation-testing or other 
 * **DoubleMath** (allowing to perform null-safe operations, like `#equals`, `#compare`, `#round` and `#roundTo`)
 * **Try** (allowing to perform try-catch operations in functional manner)
 * **UberStreams** (allowing to create wrappers for default streams, adding some useful method shortenings; and providing `MapStream` that implements stream of entries and provides lots of maps-specific methods)
+* **EventCollector** (allowing to easy-peasily create mocks with stubbed methods to collect passed arguments with different strategies)
 
 ## Why
 We couldn't find existing implementations of tools like multiple-assert, interface-compare and (especially) pair-wise shuffle. So we decided to do the bike.
