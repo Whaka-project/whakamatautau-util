@@ -50,6 +50,7 @@ import com.google.common.collect.ImmutableList;
  * @see #create(Class, BiConsumer, Collection)
  * @see #create(Class, EventCombiner, Collection)
  * @see EventHandler
+ * @see EventHandlers
  * @see EventCombiner
  */
 public class EventCollector<Target, Event> {
@@ -216,11 +217,6 @@ public class EventCollector<Target, Event> {
 	 */
 	public interface EventHandler<Event> extends Predicate<Event> {
 
-		@Override
-		default boolean test(Event t) {
-			return true;
-		}
-		
 		/**
 		 * <p>This method is called by an {@link EventCollector} when new captured event has passed <b>ALL</b> filters
 		 * and already got collected. So if this instance for an event <code>X</code> returns <code>false</code>

@@ -2,6 +2,7 @@ package org.whaka.mock;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.logging.StreamHandler;
 import java.util.stream.Collectors;
@@ -24,7 +25,8 @@ public class ChainEventHandler<Event> implements EventHandler<Event> {
 	private final List<EventHandler<? super Event>> eventHandlers;
 	
 	public ChainEventHandler(Collection<Predicate<? super Event>> filters) {
-		Preconditions.checkArgument(!filters.contains(null), "Event predicate cannot be null!");
+		filters.forEach(f -> Objects.requireNonNull(f, "Event predicate cannot be null!"));
+		Preconditions.checkArgument(filters.size() > 1, "Cannot chain less than 2 filters!");
 		this.eventFilters = ImmutableList.copyOf(filters);
 		this.eventHandlers = filters.stream()
 				.filter(EventHandler.class::isInstance)

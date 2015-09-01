@@ -1,6 +1,7 @@
 package org.whaka.mock
 
 import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 import spock.lang.Specification
 
@@ -87,19 +88,75 @@ class LatchEventHandlerTest extends Specification {
 		and:
 			def handler = new LatchEventHandler(latch)
 
+		expect:
+			handler.isOpen() == true
+
 		when:
 			handler.close()
 		then:
-			1 * latch.getCount() >> 10
+			handler.isOpen() == false
+	}
+
+	def "await"() {
+		given:
+			CountDownLatch latch = Spy(CountDownLatch, constructorArgs: [2])
 		and:
-			1 * latch.countDown()
+			def handler = new LatchEventHandler(latch)
+
+		expect: "handler is open after creation"
+			handler.isOpen() == true
+
+		when: "await is called on open handler"
+			def res = handler.await(42, TimeUnit.DAYS)
+		then: "underlying latch is called with the same arguments"
+			1 * latch.await(42, TimeUnit.DAYS) >> result
+		and: "actual result is returned"
+			res == result
+		and: "handler is still open"
+			handler.isOpen() == true
+
+		when: "await is called on closed handler"
+			handler.close()
+			def res2 = handler.await(42, TimeUnit.DAYS)
+		then: "underlying latch IS NOT called"
+			0 * latch.await(_, _)
+		and: "result is always false"
+			res2 == false
+		and: "handler is closed"
+			handler.isOpen() == false
+
+		where:
+			result << [true, false]
+	}
+
+	def "await and close"() {
+		given:
+			CountDownLatch latch = Spy(CountDownLatch, constructorArgs: [2])
 		and:
-			1 * latch.getCount() >> 5
-		and:
-			1 * latch.countDown()
-		and:
-			1 * latch.getCount() >> 0
-		and:
-			0 * latch._
+			def handler = new LatchEventHandler(latch)
+
+		expect: "handler is open after creation"
+			handler.isOpen() == true
+
+		when: "awaitAndClose is called on open handler"
+			def res = handler.awaitAndClose(42, TimeUnit.DAYS)
+		then: "underlying latch is called with the same arguments"
+			1 * latch.await(42, TimeUnit.DAYS) >> result
+		and: "actual result is returned"
+			res == result
+		and: "handler is closed"
+			handler.isOpen() == false
+
+		when: "awaitAndClose is called on closed handler"
+			def res2 = handler.awaitAndClose(42, TimeUnit.DAYS)
+		then: "underlying latch IS NOT called"
+			0 * latch.await(_, _)
+		and: "result is always false"
+			res2 == false
+		and: "handler is still closed"
+			handler.isOpen() == false
+
+		where:
+			result << [true, false]
 	}
 }

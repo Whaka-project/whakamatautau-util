@@ -75,6 +75,30 @@ class ChainEventHandlerTest extends Specification {
 			1 * h.eventCollected("qwe")
 	}
 
+	def "null filter - NPE"() {
+		when:
+			new ChainEventHandler([null])
+		then:
+			thrown(NullPointerException)
+	}
+
+	def "less than 2 filters - IAE"() {
+		when:
+			new ChainEventHandler([])
+		then:
+			thrown(IllegalArgumentException)
+
+		when:
+			new ChainEventHandler([Mock(Predicate)])
+		then:
+			thrown(IllegalArgumentException)
+
+		when:
+			new ChainEventHandler([Mock(Predicate), Mock(Predicate)])
+		then:
+			notThrown(IllegalArgumentException)
+	}
+
 	public static interface Listener {
 		void event(String s)
 	}

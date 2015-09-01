@@ -2,6 +2,7 @@ package org.whaka.mock;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.whaka.mock.EventCollector.EventHandler;
 
@@ -11,7 +12,7 @@ import org.whaka.mock.EventCollector.EventHandler;
  * When {@link #eventCollected(Object)} is called with any argument - latch gets counted down.
  * 
  * @see #await(long, TimeUnit)
- * @see #awaitSecond(int)
+ * @see #awaitSeconds(int)
  * @see #awaitMillis(long)
  * @see #isOpen()
  * @see #close()
@@ -20,17 +21,18 @@ public class LatchEventHandler implements EventHandler<Object> {
 
 	private final Object lock = new Object();
 	private final CountDownLatch latch;
+	private final AtomicBoolean open = new AtomicBoolean(true);
 	
 	public LatchEventHandler(CountDownLatch latch) {
 		this.latch = latch;
 	}
 	
 	/**
-	 * Returns <code>true</code> if latch has positive count
+	 * Returns <code>true</code> if this latch is open and underlying latch has positive count
 	 */
 	public boolean isOpen() {
 		synchronized (lock) {
-			return getLatch().getCount() > 0;
+			return open.get() && getLatch().getCount() > 0;
 		}
 	}
 	
@@ -39,19 +41,19 @@ public class LatchEventHandler implements EventHandler<Object> {
 	}
 
 	/**
-	 * Counts down underlying latch until it has a zero count
+	 * This latch is closed. <b>Note:</b> underlying latch <b>IS NOT</b> counted down,
+	 * so if you access it directly there still might be some positive counter.
 	 */
 	public void close() {
 		synchronized (lock) {
-			while(latch.getCount() > 0)
-				latch.countDown();
+			open.set(false);
 		}
 	}
 	
 	/**
 	 * Equal to {@link #await(long, TimeUnit)} with specified timeout and {@link TimeUnit#SECONDS}
 	 */
-	public boolean awaitSecond(int second) {
+	public boolean awaitSeconds(int second) {
 		return await(second, TimeUnit.SECONDS);
 	}
 	
@@ -63,13 +65,29 @@ public class LatchEventHandler implements EventHandler<Object> {
 	}
 	
 	/**
-	 * Equal to calling {@link CountDownLatch#await(long, TimeUnit)} on the underlying latch
+	 * If this latch is open equal to calling {@link CountDownLatch#await(long, TimeUnit)} on the underlying latch
 	 */
 	public boolean await(long timeout, TimeUnit unit) {
 		try {
+			synchronized (lock) {
+				if (!open.get())
+					return false;
+			}
 			return getLatch().await(timeout, unit);
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
+		}
+	}
+	
+	public boolean awaitSecondsAndClose(int seconds) {
+		return awaitAndClose(seconds, TimeUnit.SECONDS);
+	}
+	
+	public boolean awaitAndClose(long timeout, TimeUnit unit) {
+		try {
+			return await(timeout, unit);
+		} finally {
+			close();
 		}
 	}
 	
@@ -82,12 +100,13 @@ public class LatchEventHandler implements EventHandler<Object> {
 	}
 
 	/**
-	 * This method counts underlying latch down for any argument
+	 * If this latch is open this method counts underlying latch down for any argument
 	 */
 	@Override
 	public void eventCollected(Object event) {
 		synchronized (lock) {
-			latch.countDown();
+			if (open.get())
+				latch.countDown();
 		}
 	}
 }
