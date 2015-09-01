@@ -1,13 +1,58 @@
 package org.whaka.util
 
 import java.util.function.BiPredicate
+import java.util.function.BooleanSupplier
+import java.util.function.Consumer
 import java.util.function.Predicate
-
-import spock.lang.Specification
 
 import org.whaka.util.UberPredicates.DistinctPredicateProxy
 
+import spock.lang.Specification
+
 class UberPredicatesTest extends Specification {
+
+	def "counter"() {
+		given:
+			Predicate pred = UberPredicates.counter(3, value)
+		expect:
+			pred.test("qwe") == value
+			pred.test("rty") == value
+			pred.test("qaz") == value
+			pred.test("pop") == !value
+			pred.test("zaz") == !value
+		where:
+			value << [true, false]
+	}
+
+	def "peek"() {
+		given:
+			Consumer consumer = Mock()
+		and:
+			Predicate predicate = UberPredicates.peek(consumer, result)
+		when:
+			def res = predicate.test("qwe")
+		then:
+			1 * consumer.accept("qwe")
+		and:
+			res == result
+		where:
+			result << [true, false]
+	}
+
+	def "from supplier"() {
+		given:
+			BooleanSupplier sup = Mock()
+		and:
+			Predicate pred = UberPredicates.fromSupplier(sup)
+		when:
+			def res = pred.test("qwe")
+		then:
+			1 * sup.getAsBoolean() >> result
+		and:
+			res == result
+		where:
+			result << [true, false]
+	}
 
 	def "not"() {
 		given:

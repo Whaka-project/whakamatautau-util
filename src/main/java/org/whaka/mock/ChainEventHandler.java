@@ -2,6 +2,7 @@ package org.whaka.mock;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.logging.StreamHandler;
 import java.util.stream.Collectors;
@@ -18,13 +19,14 @@ import com.google.common.collect.ImmutableList;
  * <p>Since this class implements {@link EventHandler} - registered handlers will receive call
  * to the {@link #eventCollected(Object)} method when this handler gets the call.
  */
-class ChainEventHandler<Event> implements EventHandler<Event> {
+public class ChainEventHandler<Event> implements EventHandler<Event> {
 
 	private final List<Predicate<? super Event>> eventFilters;
 	private final List<EventHandler<? super Event>> eventHandlers;
 	
 	public ChainEventHandler(Collection<Predicate<? super Event>> filters) {
-		Preconditions.checkArgument(!filters.contains(null), "Event predicate cannot be null!");
+		filters.forEach(f -> Objects.requireNonNull(f, "Event predicate cannot be null!"));
+		Preconditions.checkArgument(filters.size() > 1, "Cannot chain less than 2 filters!");
 		this.eventFilters = ImmutableList.copyOf(filters);
 		this.eventHandlers = filters.stream()
 				.filter(EventHandler.class::isInstance)

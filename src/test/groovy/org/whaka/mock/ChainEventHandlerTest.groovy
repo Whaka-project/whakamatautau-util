@@ -24,7 +24,7 @@ class ChainEventHandlerTest extends Specification {
 			Predicate filter = Mock()
 			EventHandler filterHandler = Mock()
 		when:
-			def handler = EventHandler.chain(filter, filterHandler)
+			def handler = EventHandlers.chain(filter, filterHandler)
 		then:
 			handler.eventFilters == [filter, filterHandler]
 			handler.eventHandlers == [filterHandler]
@@ -67,12 +67,36 @@ class ChainEventHandlerTest extends Specification {
 			Predicate f2 = Mock()
 			EventHandler h = Mock()
 		and:
-			def handler = EventHandler.chain(f1, f2, h)
+			def handler = EventHandlers.chain(f1, f2, h)
 
 		when:
 			handler.eventCollected("qwe")
 		then:
 			1 * h.eventCollected("qwe")
+	}
+
+	def "null filter - NPE"() {
+		when:
+			new ChainEventHandler([null])
+		then:
+			thrown(NullPointerException)
+	}
+
+	def "less than 2 filters - IAE"() {
+		when:
+			new ChainEventHandler([])
+		then:
+			thrown(IllegalArgumentException)
+
+		when:
+			new ChainEventHandler([Mock(Predicate)])
+		then:
+			thrown(IllegalArgumentException)
+
+		when:
+			new ChainEventHandler([Mock(Predicate), Mock(Predicate)])
+		then:
+			notThrown(IllegalArgumentException)
 	}
 
 	public static interface Listener {
