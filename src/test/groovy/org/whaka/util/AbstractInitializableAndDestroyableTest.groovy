@@ -13,7 +13,6 @@ class AbstractInitializableAndDestroyableTest extends Specification {
 		expect:
 			!init.isInitialized()
 			!init.isDestroyed()
-			init.getDestructionStackTrace().length == 0
 
 		when: init.assertInitialized()
 		then: thrown(IllegalStateException)
@@ -39,7 +38,6 @@ class AbstractInitializableAndDestroyableTest extends Specification {
 		expect:
 			init.isInitialized()
 			!init.isDestroyed()
-			init.getDestructionStackTrace().length == 0
 
 		when: init.assertInitialized()
 		then: notThrown(IllegalStateException)
@@ -67,7 +65,6 @@ class AbstractInitializableAndDestroyableTest extends Specification {
 		expect:
 			init.isInitialized()
 			init.isDestroyed()
-			init.getDestructionStackTrace().length > 0
 
 		when: init.assertInitialized()
 		then: notThrown(IllegalStateException)

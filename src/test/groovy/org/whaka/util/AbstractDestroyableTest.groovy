@@ -10,7 +10,6 @@ class AbstractDestroyableTest extends Specification {
 
 		expect:
 			!init.isDestroyed()
-			init.getDestructionStackTrace().length == 0
 
 		when: init.assertNotDestroyed()
 		then: notThrown(IllegalStateException)
@@ -23,7 +22,6 @@ class AbstractDestroyableTest extends Specification {
 
 		expect:
 			init.isDestroyed()
-			init.getDestructionStackTrace().length > 0
 
 		when: init.assertNotDestroyed()
 		then: thrown(IllegalStateException)
