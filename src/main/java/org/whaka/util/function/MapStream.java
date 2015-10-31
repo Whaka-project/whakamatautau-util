@@ -182,12 +182,12 @@ public class MapStream<K,V> implements Stream<UberMaps.Entry<K, V>> {
 
 	@Override
 	public LongStream mapToLong(ToLongFunction<? super UberMaps.Entry<K, V>> mapper) {
-		return null;
+		return getActual().mapToLong(mapper);
 	}
 
 	@Override
 	public DoubleStream mapToDouble(ToDoubleFunction<? super UberMaps.Entry<K, V>> mapper) {
-		return null;
+		return getActual().mapToDouble(mapper);
 	}
 
 	@Override
