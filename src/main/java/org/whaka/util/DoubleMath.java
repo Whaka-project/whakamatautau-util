@@ -165,7 +165,7 @@ public final class DoubleMath {
 	public static int getLastAffectedDecimal(double d) {
 		if (!Double.isFinite(d))
 			return 0;
-		int decimalPosition = (int) Math.log10(d);
+		int decimalPosition = (int) Math.log10(Math.abs(d));
 		if (decimalPosition < 0)
 			return MAXIMUM_DEFAULT_DECIMALS;
 		if (decimalPosition > MAXIMUM_DEFAULT_DECIMALS)

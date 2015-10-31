@@ -38,7 +38,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<gmaven-plugin.version>1.5</gmaven-plugin.version>
-		<groovy.version>2.4.1</groovy.version>
+		<groovy.version>2.4.3</groovy.version>
 	</properties>
 
 	<dependencies>
