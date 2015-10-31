@@ -1,6 +1,7 @@
 package org.whaka.util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -66,14 +67,29 @@ public class UberPredicates {
 		return t -> !predicate.test(t);
 	}
 	
+	@SafeVarargs
+	public static <T> Predicate<T> anyOf(Predicate<T>... predicates) {
+		return anyOf(Arrays.asList(predicates));
+	}
+	
 	public static <T> Predicate<T> anyOf(Collection<Predicate<T>> predicates) {
 		List<Predicate<T>> copy = new ArrayList<>(predicates);
 		return t -> copy.stream().anyMatch(p -> p.test(t));
 	}
 	
+	@SafeVarargs
+	public static <T> Predicate<T> allOf(Predicate<T>... predicates) {
+		return allOf(Arrays.asList(predicates));
+	}
+	
 	public static <T> Predicate<T> allOf(Collection<Predicate<T>> predicates) {
 		List<Predicate<T>> copy = new ArrayList<>(predicates);
 		return t -> copy.stream().allMatch(p -> p.test(t));
+	}
+	
+	@SafeVarargs
+	public static <T> Predicate<T> noneOf(Predicate<T>... predicates) {
+		return noneOf(Arrays.asList(predicates));
 	}
 	
 	public static <T> Predicate<T> noneOf(Collection<Predicate<T>> predicates) {

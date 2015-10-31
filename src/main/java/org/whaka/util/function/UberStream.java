@@ -84,6 +84,18 @@ public class UberStream<T> implements Stream<T> {
 	public UberStream<T> filter(Predicate<? super T> predicate) {
 		return new UberStream<>(getActual().filter(predicate));
 	}
+
+	/**
+	 * <p>Filter only instances of the specified class (or nulls) and cast them to the specified type.
+	 * <pre>
+	 * 	#filter(x -> x == null || filteredClass.isInstance(x))
+	 * 		.map(x -> filteredClass.cast(x));
+	 * </pre>
+	 * 
+	 */
+	public <R extends T> UberStream<R> filterByClass(Class<R> filteredClass) {
+		return filter(anyOf(Objects::isNull, filteredClass::isInstance)).map(filteredClass::cast);
+	}
 	
 	/**
 	 * Filter out all elements that match specified predicate. Equal to:
