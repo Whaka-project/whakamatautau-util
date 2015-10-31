@@ -92,6 +92,8 @@ public class UberStream<T> implements Stream<T> {
 	 * 		.map(x -> filteredClass.cast(x));
 	 * </pre>
 	 * 
+	 * <b>Note:</b> <code>nulls</code> survive the filtering!
+	 * Use separate filter or {@link #dropNulls()} to filter them out!
 	 */
 	public <R extends T> UberStream<R> filterByClass(Class<R> filteredClass) {
 		return filter(anyOf(Objects::isNull, filteredClass::isInstance)).map(filteredClass::cast);
