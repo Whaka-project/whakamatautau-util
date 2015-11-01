@@ -54,6 +54,9 @@ if (JavaVersion.current().isJava8Compatible()) {
 	}
 }
 
+def osslogin = hasProperty('ossrhUsername') ? ossrhUsername : ""
+def osspswrd = hasProperty('ossrhPassword') ? ossrhPassword : ""
+
 uploadArchives {
 	repositories {
 		mavenDeployer {
@@ -62,11 +65,11 @@ uploadArchives {
 			}
 
 			repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-				authentication(userName: ossrhUsername, password: ossrhPassword)
+				authentication(userName: osslogin, password: osspswrd)
 			}
 
 			snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-				authentication(userName: ossrhUsername, password: ossrhPassword)
+				authentication(userName: osslogin, password: osspswrd)
 			}
 
 			pom.project {
