@@ -38,8 +38,10 @@ artifacts {
 	archives javadocJar, sourcesJar
 }
 
-signing {
-	sign configurations.archives
+if (hasProperty('signing.keyId')) {
+	signing {
+		sign configurations.archives
+	}
 }
 
 task wrapper(type: Wrapper) {
@@ -54,63 +56,62 @@ if (JavaVersion.current().isJava8Compatible()) {
 	}
 }
 
-def osslogin = hasProperty('ossrhUsername') ? ossrhUsername : ""
-def osspswrd = hasProperty('ossrhPassword') ? ossrhPassword : ""
-
-uploadArchives {
-	repositories {
-		mavenDeployer {
-			beforeDeployment {
-				MavenDeployment deployment -> signing.signPom(deployment)
-			}
-
-			repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-				authentication(userName: osslogin, password: osspswrd)
-			}
-
-			snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-				authentication(userName: osslogin, password: osspswrd)
-			}
-
-			pom.project {
-				name archivesBaseName
-				packaging 'jar'
-				// optionally artifactId can be defined here
-				description 'Testing Tools To Level Down Your Tests'
-				url 'https://github.com/Whaka-project/whakamatautau-util'
-  
-				scm {
-					connection 'scm:git:https://vantuz-subhuman@github.com/Whaka-project/whakamatautau-util.git'
-					developerConnection 'scm:git:https://vantuz-subhuman@github.com/Whaka-project/whakamatautau-util.git'
+if (hasProperty('ossrhUsername') && hasProperty('ossrhPassword')) {
+	uploadArchives {
+		repositories {
+			mavenDeployer {
+				beforeDeployment {
+					MavenDeployment deployment -> signing.signPom(deployment)
+				}
+	
+				repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+					authentication(userName: ossrhUsername, password: ossrhPassword)
+				}
+	
+				snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+					authentication(userName: ossrhUsername, password: ossrhPassword)
+				}
+	
+				pom.project {
+					name archivesBaseName
+					packaging 'jar'
+					// optionally artifactId can be defined here
+					description 'Testing Tools To Level Down Your Tests'
 					url 'https://github.com/Whaka-project/whakamatautau-util'
-				}
-  
-				licenses {
-					license {
-						name 'MIT License'
-						url 'http://www.opensource.org/licenses/mit-license.php'
-						distribution 'repo'
+	  
+					scm {
+						connection 'scm:git:https://vantuz-subhuman@github.com/Whaka-project/whakamatautau-util.git'
+						developerConnection 'scm:git:https://vantuz-subhuman@github.com/Whaka-project/whakamatautau-util.git'
+						url 'https://github.com/Whaka-project/whakamatautau-util'
 					}
-				}
-				
-				organization {
-					name 'Whaka-project'
-					url 'https://github.com/Whaka-project'
-				}
-  
-				developers {
-					developer {
-						id 'vantuz-subhuman'
-						name 'Vantuz Subhuman'
-						email 'vantuz-subhuman@yandex.ru'
-						url 'https://github.com/vantuz-subhuman'
-						organization 'Whaka-project'
+	  
+					licenses {
+						license {
+							name 'MIT License'
+							url 'http://www.opensource.org/licenses/mit-license.php'
+							distribution 'repo'
+						}
 					}
-					developer {
-						id 'visitorus'
-						name 'visitorus'
-						url 'https://github.com/visitorus'
-						organization 'Whaka-project'
+					
+					organization {
+						name 'Whaka-project'
+						url 'https://github.com/Whaka-project'
+					}
+	  
+					developers {
+						developer {
+							id 'vantuz-subhuman'
+							name 'Vantuz Subhuman'
+							email 'vantuz-subhuman@yandex.ru'
+							url 'https://github.com/vantuz-subhuman'
+							organization 'Whaka-project'
+						}
+						developer {
+							id 'visitorus'
+							name 'visitorus'
+							url 'https://github.com/visitorus'
+							organization 'Whaka-project'
+						}
 					}
 				}
 			}
