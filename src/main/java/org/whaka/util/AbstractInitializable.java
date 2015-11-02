@@ -7,11 +7,6 @@ import com.google.common.base.Preconditions;
 /**
  * <p>Abstract implementation of the {@link Initializable}. Provides default implementations for all methods.
  * 
- * <p><b>Note:</b> {@link #isInitialized()} returns <code>false</code> by default, until {@link #initialize()}
- * won't be called for the first time! Unlike default {@link Initializable} implementation, where
- * {@link #isInitialized()} returns <code>true</code>. So extending this class automatically means that your
- * class does <b>need</b> the "initialization" context and will require to call {@link #initialize()} method.
- * 
  * @see #doInitialize()
  * @see #assertInitialized()
  */

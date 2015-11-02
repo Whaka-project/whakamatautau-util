@@ -13,7 +13,6 @@ import com.google.common.base.Preconditions;
  * @see #doDestroy()
  * @see #assertInitialized()
  * @see #assertNotDestroyed()
- * @see #getDestructionStackTrace()
  */
 public abstract class AbstractInitializableAndDestroyable extends AbstractDestroyable implements Initializable {
 
