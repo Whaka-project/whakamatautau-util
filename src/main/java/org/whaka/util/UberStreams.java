@@ -15,8 +15,8 @@ public class UberStreams {
 	private UberStreams() {
 	}
 	
-	public static <T> Stream<T> iterate(T seed, Function<T, T> next, Predicate<T> validator) {
-		return StreamSupport.stream(UberIterators.iterate(seed, next, validator).spliterator(), false);
+	public static <T> UberStream<T> iterate(T seed, Function<T, T> next, Predicate<T> validator) {
+		return stream(StreamSupport.stream(UberIterators.iterate(seed, next, validator).spliterator(), false));
 	}
 	
 	@SafeVarargs

@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import org.whaka.util.UberStreams;
+import org.whaka.util.function.UberStream;
 
 public class UberClasses {
 
@@ -25,7 +26,7 @@ public class UberClasses {
 	 * <p>Stream of the type itself followed by all the ancestors
 	 * <p>Use {@link Stream#skip(long)} if you need to skip the type itself.
 	 */
-	public static Stream<Class<?>> streamAncestors(Class<?> type) {
+	public static UberStream<Class<?>> streamAncestors(Class<?> type) {
 		return UberStreams.iterate(type, Class::getSuperclass, Objects::nonNull);
 	}
 	
@@ -33,8 +34,8 @@ public class UberClasses {
 	 * <p>Stream of the type itself followed by all the declared interfaces.
 	 * <p>Use {@link Stream#skip(long)} if you need to skip the type itself.
 	 */
-	public static Stream<Class<?>> streamInterfaces(Class<?> type) {
-		return Stream.concat(Stream.of(type), Stream.of(type.getInterfaces()));
+	public static UberStream<Class<?>> streamInterfaces(Class<?> type) {
+		return UberStreams.stream(Stream.concat(Stream.of(type), Stream.of(type.getInterfaces())));
 	}
 	
 	/**
@@ -56,8 +57,8 @@ public class UberClasses {
 	 * 	linearization of C = [C, I2, I, B, I3, A]
 	 * </pre>
 	 */
-	public static Stream<Class<?>> streamTypeLinearization(Class<?> type) {
-		return linearization(type).stream();
+	public static UberStream<Class<?>> streamTypeLinearization(Class<?> type) {
+		return UberStreams.stream(linearization(type));
 	}
 	
 	private static Set<Class<?>> linearization(Class<?> type) {
