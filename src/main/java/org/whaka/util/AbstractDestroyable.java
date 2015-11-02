@@ -8,7 +8,6 @@ import com.google.common.base.Preconditions;
  * <p>Abstract implementation of the {@link Destroyable}. Provides default implementations for all methods.
  * 
  * @see #doDestroy()
- * @see #getDestructionStackTrace()
  * @see #assertNotDestroyed()
  */
 public abstract class AbstractDestroyable implements Destroyable {
@@ -16,7 +15,7 @@ public abstract class AbstractDestroyable implements Destroyable {
 	private final AtomicBoolean destroyed = new AtomicBoolean();
 	
 	@Override
-	public synchronized void destroy() {
+	public final synchronized void destroy() {
 		if (destroyed.compareAndSet(false, true)) {
 			doDestroy();
 		}
@@ -28,11 +27,11 @@ public abstract class AbstractDestroyable implements Destroyable {
 	protected void doDestroy() {}
 	
 	@Override
-	public boolean isDestroyed() {
+	public final boolean isDestroyed() {
 		return destroyed.get();
 	}
 	
-	protected void assertNotDestroyed() throws IllegalStateException {
+	protected final void assertNotDestroyed() throws IllegalStateException {
 		Preconditions.checkState(!isDestroyed(), "Instance cannot be used after 'destroy()' method is called!");
 	}
 }

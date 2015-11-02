@@ -20,7 +20,7 @@ public abstract class AbstractInitializable implements Initializable {
 	private final AtomicBoolean initialized = new AtomicBoolean();
 	
 	@Override
-	public void initialize() {
+	public final void initialize() {
 		if (initialized.compareAndSet(false, true))
 			doInitialize();
 	}
@@ -31,14 +31,14 @@ public abstract class AbstractInitializable implements Initializable {
 	protected void doInitialize() {}
 	
 	@Override
-	public boolean isInitialized() {
+	public final boolean isInitialized() {
 		return initialized.get();
 	}
 	
 	/**
 	 * @throws IllegalStateException if {@link #isInitialized()} returns <code>false</code>
 	 */
-	protected void assertInitialized() throws IllegalStateException {
+	protected final void assertInitialized() throws IllegalStateException {
 		Preconditions.checkState(isInitialized(), "Instance cannot be used before 'initialize()' method is called!");
 	}
 }
