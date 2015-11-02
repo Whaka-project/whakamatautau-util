@@ -234,4 +234,22 @@ class UberStreamTest extends Specification {
 			["qwe","rty"]	|	"qwe"	|	"qwe"	|	"rty"	||	"qweqweqwertyrty"
 			["qwe","rty"]	|	":"		|	":"		|	""		||	":qwe:rty"
 	}
+
+	def "filter by class"() {
+		given:
+			UberStream uber = new UberStream(col.stream())
+		expect:
+			uber.filterByClass(type).toList() == result
+		where:
+			col									|	type		|	result
+			[1, 0.5D, 2L, 3.2F, null]			|	Integer		|	[1, null]
+			[1, 0.5D, 2L, 3.2F, null]			|	Double		|	[0.5D, null]
+			[1, 0.5D, 2L, 3.2F, null]			|	Long		|	[2L, null]
+			[1, 0.5D, 2L, 3.2F, null]			|	Float		|	[3.2F, null]
+			[1, 0.5D, 2L, 3.2F, null]			|	String		|	[null]
+			[1, 0.5D, 2L, 3.2F, null]			|	Number		|	[1, 0.5D, 2L, 3.2F, null]
+			["qwe", 1, null, "rty", 2, null]	|	String		|	["qwe", null, "rty", null]
+			["qwe", 1, null, "rty", 2, null]	|	Number		|	[1, null, 2, null]
+			["qwe", 1, null, "rty", 2, null]	|	Boolean		|	[null, null]
+	}
 }

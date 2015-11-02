@@ -8,10 +8,10 @@ import java.util.function.Consumer
 import java.util.function.Function
 import java.util.function.Predicate
 
-import spock.lang.Specification
-
 import org.whaka.util.UberCollections
 import org.whaka.util.UberMaps
+
+import spock.lang.Specification
 
 class MapStreamTest extends Specification {
 	def "toMap"() {
@@ -412,5 +412,41 @@ class MapStreamTest extends Specification {
 			[1:10,2:20,3:30]	|	3		|	entry(3, 30)
 			[1:10,2:20,3:30]	|	4		|	null
 			[1:10,2:20,3:30]	|	null	|	null
+	}
+
+	def "filter key by class"() {
+		given:
+			def mapstr = new MapStream(map)
+		expect:
+			mapstr.filterKeyByClass(type).toMap() == result
+		where:
+			map														|	type		|	result
+			[1:10, 2L:20, 3.2F:30, 5.0D:40, (null):50]				|	Integer		|	[1:10, (null):50]
+			[1:10, 2L:20, 3.2F:30, 5.0D:40, (null):50]				|	Long		|	[2L:20, (null):50]
+			[1:10, 2L:20, 3.2F:30, 5.0D:40, (null):50]				|	Float		|	[3.2F:30, (null):50]
+			[1:10, 2L:20, 3.2F:30, 5.0D:40, (null):50]				|	Double		|	[5.0D:40, (null):50]
+			[1:10, 2L:20, 3.2F:30, 5.0D:40, (null):50]				|	String		|	[(null):50]
+			[1:10, 2L:20, 3.2F:30, 5.0D:40, (null):50]				|	Number		|	[1:10, 2L:20, 3.2F:30, 5.0D:40, (null):50]
+			[1:10, "qwe":20, (null):30, 2:40, "rty":50, (null):60]	|	Integer		|	[1:10, (null):30, 2:40, (null):60]
+			[1:10, "qwe":20, (null):30, 2:40, "rty":50, (null):60]	|	String		|	["qwe":20, (null):30, "rty":50, (null):60]
+			[1:10, "qwe":20, (null):30, 2:40, "rty":50, (null):60]	|	Boolean		|	[(null):30, (null):60]
+	}
+
+	def "filter value by class"() {
+		given:
+			def mapstr = new MapStream(map)
+		expect:
+			mapstr.filterValueByClass(type).toMap() == result
+		where:
+			map												|	type		|	result
+			[a:1, b:2L, c:3.2F, d:5.0D, e:null]				|	Integer		|	[a:1, e:null]
+			[a:1, b:2L, c:3.2F, d:5.0D, e:null]				|	Long		|	[b:2L, e:null]
+			[a:1, b:2L, c:3.2F, d:5.0D, e:null]				|	Float		|	[c:3.2F, e:null]
+			[a:1, b:2L, c:3.2F, d:5.0D, e:null]				|	Double		|	[d:5.0D, e:null]
+			[a:1, b:2L, c:3.2F, d:5.0D, e:null]				|	String		|	[e:null]
+			[a:1, b:2L, c:3.2F, d:5.0D, e:null]				|	Number		|	[a:1, b:2L, c:3.2F, d:5.0D, e:null]
+			[a:1, b:"qwe", c:null, d:2, e:"rty", f:null]	|	Integer		|	[a:1, c:null, d:2, f:null]
+			[a:1, b:"qwe", c:null, d:2, e:"rty", f:null]	|	String		|	[b:"qwe", c:null, e:"rty", f:null]
+			[a:1, b:"qwe", c:null, d:2, e:"rty", f:null]	|	Boolean		|	[c:null, f:null]
 	}
 }

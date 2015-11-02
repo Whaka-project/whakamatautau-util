@@ -23,7 +23,6 @@ class AbstractInitializableAndDestroyableTest extends Specification {
 		when:
 			init.initialize()
 		then:
-			1 * init.initialize()
 			1 * init.doInitialize()
 			0 * init._
 
@@ -32,7 +31,6 @@ class AbstractInitializableAndDestroyableTest extends Specification {
 		when:
 			init.initialize()
 		then:
-			1 * init.initialize()
 			0 * init._
 
 		expect:
@@ -48,7 +46,6 @@ class AbstractInitializableAndDestroyableTest extends Specification {
 		when:
 			init.destroy()
 		then:
-			1 * init.destroy()
 			1 * init.doDestroy()
 			0 * init._
 
@@ -58,8 +55,6 @@ class AbstractInitializableAndDestroyableTest extends Specification {
 			init.initialize()
 			init.destroy()
 		then:
-			1 * init.initialize()
-			1 * init.destroy()
 			0 * init._
 
 		expect:
