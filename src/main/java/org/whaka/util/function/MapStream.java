@@ -3,15 +3,7 @@ package org.whaka.util.function;
 import static org.whaka.util.UberMaps.*;
 import static org.whaka.util.UberPredicates.*;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.Spliterator;
+import java.util.*;
 import java.util.function.*;
 import java.util.stream.Collector;
 import java.util.stream.DoubleStream;
@@ -104,6 +96,30 @@ public class MapStream<K,V> implements Stream<UberMaps.Entry<K, V>> {
 	public MapStream<K, V> filterValue(Predicate<? super V> valPredicate) {
 		return filter(e -> valPredicate.test(e.val));
 	}
+
+	/**
+	 * <p>Filter only the keys that are instances of the specified class (or nulls) and cast them to the specified type.
+	 * 
+	 * <p><b>Note:</b> <code>nulls</code> survive the filtering!
+	 * Use separate filters to drop nulls!
+	 */
+	public <R extends K> MapStream<R, V> filterKeyByClass(Class<R> filteredKeyClass) {
+		return filterKey(createIsNullOrInstancePredicate(filteredKeyClass)).mapKey(filteredKeyClass::cast);
+	}
+	
+	/**
+	 * <p>Filter only the values that are instances of the specified class (or nulls) and cast them to the specified type.
+	 * 
+	 * <p><b>Note:</b> <code>nulls</code> survive the filtering!
+	 * Use separate filters to drop nulls!
+	 */
+	public <R extends V> MapStream<K, R> filterValueByClass(Class<R> filteredValueClass) {
+		return filterValue(createIsNullOrInstancePredicate(filteredValueClass)).mapValue(filteredValueClass::cast);
+	}
+	
+	private static <T> Predicate<T> createIsNullOrInstancePredicate(Class<?> predicatedClass) {
+		return anyOf(Objects::isNull, predicatedClass::isInstance);
+	}
 	
 	/**
 	 * All the entries that <b>do match</b> specified predicate are removed from the stream.
@@ -182,12 +198,12 @@ public class MapStream<K,V> implements Stream<UberMaps.Entry<K, V>> {
 
 	@Override
 	public LongStream mapToLong(ToLongFunction<? super UberMaps.Entry<K, V>> mapper) {
-		return null;
+		return getActual().mapToLong(mapper);
 	}
 
 	@Override
 	public DoubleStream mapToDouble(ToDoubleFunction<? super UberMaps.Entry<K, V>> mapper) {
-		return null;
+		return getActual().mapToDouble(mapper);
 	}
 
 	@Override
