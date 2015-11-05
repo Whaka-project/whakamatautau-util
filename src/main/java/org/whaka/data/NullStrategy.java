@@ -1,7 +1,7 @@
 package org.whaka.data;
 
-import static org.whaka.util.UberStreams.*;
 import static java.util.Arrays.*;
+import static org.whaka.util.UberStreams.stream;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,6 +27,7 @@ import java.util.function.Function;
  * 	<li>{@link #nullableEnd(Collection)}
  * </ul>
  */
+@SuppressWarnings({"unchecked", "rawtypes"})
 public class NullStrategy {
 
 	/**
@@ -37,7 +38,6 @@ public class NullStrategy {
 	 * 	<li>{@link #apply(Collection)} specified collection will be transformed into a list without any other changes.
 	 * </ul>
 	 */
-	@SuppressWarnings("unchecked")
 	public static NullStrategy NO_STRATEGY = new NullStrategy(ArrayList::new);
 	
 	/**
@@ -58,10 +58,8 @@ public class NullStrategy {
 	 */
 	public static NullStrategy NULLABLE_END = new NullStrategy(NullStrategy::nullableEnd);
 
-	@SuppressWarnings("rawtypes")
 	private final Function<Collection, List> function;
 	
-	@SuppressWarnings("rawtypes")
 	private NullStrategy(Function<Collection, List> function) {
 		this.function = function;
 	}
@@ -70,7 +68,6 @@ public class NullStrategy {
 	 * Specified array is cloned <b>in any case</b>.
 	 * Any other behavior is specific to a strategy.
 	 */
-	@SuppressWarnings("unchecked")
 	public <T> T[] apply(T[] arr) {
 		return (T[]) stream(apply(asList(arr))).toArray(arr.getClass().getComponentType());
 	}
@@ -79,7 +76,6 @@ public class NullStrategy {
 	 * Specified collection is copied into a list <b>in any case</b>.
 	 * Any other behavior is specific to a strategy.
 	 */
-	@SuppressWarnings("unchecked")
 	public <T> List<T> apply(Collection<T> col) {
 		return function.apply(col);
 	}

@@ -31,7 +31,7 @@ public class UberMaps {
 	
 	
 	/**
-	 * <p><b>Immutable</b> implementation of {@link java.util.Map.Map.Entry}.
+	 * <p><b>Immutable</b> implementation of {@link java.util.Map.Entry}.
 	 * 
 	 * <p>Entry also implements {@link Predicate} of a map, and tests whether specified map contains an entry
 	 * like this one: {@link Entry#test(Map)}.
