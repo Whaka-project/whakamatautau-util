@@ -13,14 +13,16 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.google.common.base.MoreObjects;
 import org.whaka.util.UberPredicates;
 import org.whaka.util.reflection.comparison.ComparisonPerformer;
+import org.whaka.util.reflection.comparison.ComparisonPerformers;
 import org.whaka.util.reflection.properties.ClassProperty;
 import org.whaka.util.reflection.properties.ClassPropertyExtractor;
 import org.whaka.util.reflection.properties.ClassPropertyKey;
 import org.whaka.util.reflection.properties.GetterClassProperty;
 import org.whaka.util.reflection.properties.GettersExtractor;
+
+import com.google.common.base.MoreObjects;
 
 /**
  * <p>Class provides functionality to build {@link CompositeComparisonPerformer} by streaming all the getter methods
@@ -31,23 +33,38 @@ import org.whaka.util.reflection.properties.GettersExtractor;
  * By default - {@link GettersExtractor} class is used. But you can specify your own extractor - if necessary.
  *
  * <p><b>Note:</b> that {@link GettersExtractor} by default treats as getters only methods with non-void return type
- * and no arguments, so any other mathods will be ignored by default. Also all static methods are ignored at the very
+ * and no arguments, so any other methods will be ignored by default. Also all static methods are ignored at the very
  * beginning, so you don't have to filter them out manually.
  *
  * <p><b>Note:</b> if you specified in the constructor actual class (not an interface) - it will also contain all the
  * 'getters' from the ancestor Object class, including #hashCode(), #getClass(), and #clone(). They are not filtered
  * out by default, to support rare occasions when they might be required. But cuz most of the time they are not wanted
- * to be used - you can used constant field {@link #DEFAULT_METHODS}. You can use method
+ * to be used - you can use constant field {@link #DEFAULT_METHODS}. You can use method
  * {@link #addExcludingFilter(String)} with this filter to exclude all getters from Object class.
+ * Or even better you can use {@link ComparisonPerformers#buildGetters(Class)} to create a builder with this filter
+ * already added (but be careful, and read documentation).
  *
  * <p>This builder doesn't allow to specify a delegate performer specifically for a property, so default
  * {@link DynamicComparisonPerformer} will be used for all the created properties.
  *
- * <p>Method is included in the result performer if it matched by at least one including filter (if any present)
- * and NOT matched by any excluding filter. This means that if there are including filters. and none of them
- * returned <code>true</code> for a method - it is ignored. If one of the filters returned true - method tested by
- * all the excluding filters. If one of excluding filters returned true - method ignored. If none of excluding
- * filters returned true - methdo is included. If no filter were specified - all extracted getters will be used.
+ * <p>There're three groups of filters, used by this class to filter getters:
+ * <ul>
+ * 	<li>Requirement filters - <b>all</b> of them have to accept method, for it to be included.
+ * 	<li>Including filters - <b>any</b> of them have to accept method (if any present), for it to be included.
+ * 	<li>Excluding filters - <b>none</b> of them should accept method, for it to be included.
+ * </ul>
+ *
+ * <p>Method is included in the result performer if it matched by all requirement filters, at least one including
+ * filter (if any present) and NOT matched by any excluding filter.
+ * 
+ * <p>If there're any requirement filters, and at least one of them returned <code>false</code> - method is ignored.
+ * If there're no requirement filters or all of them accepted method - it is sent to including filters.
+ * If there're any including filters, and none of them returned <code>true</code> for a method - it is ignored.
+ * If there're no including filters, or one of them returned <code>true</code> - it is sent to excluding filters.
+ * If there're any excluding filters and any one of them returned <code>true</code> - method ignored.
+ * If there're no excluding filters of none of them returned <code>true</code> - method is included.
+ * 
+ *  <p>So if no filters of any kind were specified - all extracted getters will be used.
  *
  * <p>This builder implements {@link AbstractDynamicPerformerBuilder}, so it provides all the
  * {@link DynamicComparisonPerformer} functionality. Check out documentation for the parent class.
@@ -56,6 +73,7 @@ import org.whaka.util.reflection.properties.GettersExtractor;
  * to <b>itself</b> for any field of the same type (or an extended type). Unless (!) any other delegate is registered
  * for the type specified to the constructor.
  *
+ * @see #addRequirement(Predicate)
  * @see #addFilter(String)
  * @see #addFilter(Predicate)
  * @see #addExcludingFilter(String)
@@ -81,6 +99,7 @@ public class GettersDynamicPerformerBuilder<T> extends AbstractDynamicPerformerB
 	
 	private final AtomicBoolean buildFinished = new AtomicBoolean();
 	private final ClassPropertyExtractor<GetterClassProperty<?, ?>> gettersExtractor;
+	private final Set<Predicate<Method>> requirementFilters = new LinkedHashSet<>();
 	private final Set<Predicate<Method>> includingFilters = new LinkedHashSet<>();
 	private final Set<Predicate<Method>> excludingFilters = new LinkedHashSet<>();
 	
@@ -95,6 +114,14 @@ public class GettersDynamicPerformerBuilder<T> extends AbstractDynamicPerformerB
 
 	public ClassPropertyExtractor<GetterClassProperty<?, ?>> getGettersExtractor() {
 		return gettersExtractor;
+	}
+
+	/**
+	 * Returns set of all requirement filters. Collections is fully mutable
+	 * so you are free to do whatever you want with it.
+	 */
+	public Set<Predicate<Method>> getRequirementFilters() {
+		return requirementFilters;
 	}
 	
 	/**
@@ -129,6 +156,16 @@ public class GettersDynamicPerformerBuilder<T> extends AbstractDynamicPerformerB
 	 */
 	public GettersDynamicPerformerBuilder<T> addExcludingFilter(String pattern) {
 		return addExcludingFilter(new PatternPredicate(pattern));
+	}
+	
+	/**
+	 * Specified filter will be stored in the set of requirement filters.
+	 * Any method matched by all requirement filters is sent to be test by including filters.
+	 */
+	public GettersDynamicPerformerBuilder<T> addRequirement(Predicate<Method> filter) {
+		Objects.requireNonNull(filter, "Property filter cannot be null!");
+		getRequirementFilters().add(filter);
+		return this;
 	}
 	
 	/**
@@ -175,20 +212,35 @@ public class GettersDynamicPerformerBuilder<T> extends AbstractDynamicPerformerB
 	}
 	
 	private Predicate<GetterClassProperty<?, ?>> createTotalPredicate() {
-		Predicate<Method> totalPositive = createTotalPositivePredicate();
-		Predicate<Method> totalNegative = createTotalNegativePredicate();
-		Predicate<Method> total = totalPositive.and(totalNegative);
+		Predicate<Method> totalRequired = createTotalRequiredPredicate();
+		Predicate<Method> totalIncluded = createTotalPositivePredicate();
+		Predicate<Method> totalExcluded = createTotalNegativePredicate();
+		Predicate<Method> total = UberPredicates.allOf(totalRequired, totalIncluded, totalExcluded);
 		return (GetterClassProperty<?, ?> prop) -> total.test(prop.getGetter());
 	}
 	
+	/**
+	 * All of requirement filters should accept a method to be included
+	 */
+	private Predicate<Method> createTotalRequiredPredicate() {
+		Set<Predicate<Method>> filters = getRequirementFilters();
+		return filters.isEmpty() ? m -> true : UberPredicates.allOf(filters);
+	}
+	
+	/**
+	 * Any of including filters should accept a method to be included
+	 */
 	private Predicate<Method> createTotalPositivePredicate() {
 		Set<Predicate<Method>> filters = getIncludingFilters();
 		return filters.isEmpty() ? m -> true : UberPredicates.anyOf(filters);
 	}
 	
+	/**
+	 * None of excluding filters should accept a method to be included
+	 */
 	private Predicate<Method> createTotalNegativePredicate() {
 		Set<Predicate<Method>> filters = getExcludingFilters();
-		return UberPredicates.noneOf(filters);
+		return filters.isEmpty() ? m -> true : UberPredicates.noneOf(filters);
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })

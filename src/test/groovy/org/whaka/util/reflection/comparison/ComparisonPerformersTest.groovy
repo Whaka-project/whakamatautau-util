@@ -4,8 +4,6 @@ import static org.whaka.util.reflection.comparison.ComparisonPerformers.*
 
 import java.util.function.BiPredicate
 
-import spock.lang.Specification
-
 import org.whaka.util.reflection.comparison.performers.ArrayComparisonPerformer
 import org.whaka.util.reflection.comparison.performers.GettersDynamicPerformerBuilder
 import org.whaka.util.reflection.comparison.performers.ListComparisonPerformer
@@ -14,6 +12,8 @@ import org.whaka.util.reflection.comparison.performers.PropertyDynamicPerformerB
 import org.whaka.util.reflection.comparison.performers.SetComparisonPerformer
 import org.whaka.util.reflection.comparison.performers.GettersDynamicPerformerBuilder.PatternPredicate
 
+import spock.lang.Specification
+
 class ComparisonPerformersTest extends Specification {
 
 	def "buildGetters"() {
@@ -21,13 +21,45 @@ class ComparisonPerformersTest extends Specification {
 			GettersDynamicPerformerBuilder<?> builder = ComparisonPerformers.buildGetters(type)
 		expect: "created builder contains specified type"
 			builder.getType() == type
-		and: "created builder contains one excluding filter with DEFAULT_METHODS field"
+		and: "created builder contains one requirement filter"
+			builder.getRequirementFilters().size() == 1
+		and: "and one excluding filter with DEFAULT_METHODS field"
 			builder.getExcludingFilters().size() == 1
 			def filter = builder.getExcludingFilters()[0]
 			filter instanceof PatternPredicate
 			filter.getPattern().pattern() == GettersDynamicPerformerBuilder.DEFAULT_METHODS
 		where:
 			type << [String, Integer, Object, Class, ComparisonPerformersTest]
+	}
+
+	/*
+	 * Before #107 buildGetters was adding false including filter that includes ALL public getters to the
+	 * final performer. Now it is fixed so it adds a single requirement filter that requires for all getters
+	 * to be PUBLIC.
+	 */
+	def "#107 buildGetters doesn't include all public methods"() {
+		expect:
+			ComparisonPerformers.buildGetters(String)
+				.addFilter("length")
+				.build("test")
+				.getPerformers().size() == 1
+		and:
+			ComparisonPerformers.buildGetters(String)
+				.addFilter("length")
+				.addFilter("isEmpty")
+				.build("test")
+				.getPerformers().size() == 2
+
+	}
+
+	def "buildGetters excludes default Object methods"() {
+		expect:
+			ComparisonPerformers.buildGetters(String).build("test")
+				.getPerformers().keySet()
+				.collect { it.id }
+				.contains(method) == false
+		where:
+			method << ["toString", "hashCode", "clone", "getClass"]
 	}
 
 	def "buildProperties"() {
