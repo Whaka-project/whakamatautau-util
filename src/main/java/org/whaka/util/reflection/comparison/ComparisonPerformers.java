@@ -117,12 +117,16 @@ public class ComparisonPerformers {
 	 * <p>Create instance of the {@link GettersDynamicPerformerBuilder} that filters in <b>only public methods</b>
 	 *  and with field {@link GettersDynamicPerformerBuilder#DEFAULT_METHODS} added as excluding predicate.
 	 *
-	 * <p>It means that builder created by this method will already contain one excluding filter,
-	 * and it wil exclude all 'default' getters from the Object class.
+	 * <p><b>Note:</b> builder created by this method will already have a requirement filter for public methods,
+	 * it means that <b>any non-public method cannot be processed</b> by it! Use constructor manually to create
+	 * a builder with different configuration.
+	 * 
+	 * <p><b>Note:</b> builder created by this method will already contain one excluding filter,
+	 * and it will exclude all 'default' getters from the Object class.
 	 */
 	public static <T> GettersDynamicPerformerBuilder<T> buildGetters(Class<T> type) {
 		return new GettersDynamicPerformerBuilder<>(type)
-				.addFilter(m -> UberMethods.getVisibility(m) == Visibility.PUBLIC)
+				.addRequirement(m -> UberMethods.getVisibility(m) == Visibility.PUBLIC)
 				.addExcludingFilter(GettersDynamicPerformerBuilder.DEFAULT_METHODS);
 	}
 	

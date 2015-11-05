@@ -4,8 +4,6 @@ import java.lang.reflect.Method
 import java.util.function.Predicate
 import java.util.regex.Pattern
 
-import spock.lang.Specification
-
 import org.whaka.util.reflection.comparison.ComparisonPerformer
 import org.whaka.util.reflection.comparison.ComparisonPerformers
 import org.whaka.util.reflection.comparison.TestEntities
@@ -15,6 +13,8 @@ import org.whaka.util.reflection.properties.ClassPropertyKey
 import org.whaka.util.reflection.properties.GetterClassProperty
 import org.whaka.util.reflection.properties.GettersExtractor
 
+import spock.lang.Specification
+
 class GettersDynamicPerformerBuilderTest extends Specification {
 
 	def "construction"() {
@@ -22,6 +22,7 @@ class GettersDynamicPerformerBuilderTest extends Specification {
 			GettersDynamicPerformerBuilder<?> builder = new GettersDynamicPerformerBuilder(type)
 		then:
 			builder.getType() == type
+			builder.getRequirementFilters().isEmpty()
 			builder.getIncludingFilters().isEmpty()
 			builder.getExcludingFilters().isEmpty()
 			builder.getGettersExtractor() instanceof GettersExtractor
@@ -32,6 +33,7 @@ class GettersDynamicPerformerBuilderTest extends Specification {
 			GettersDynamicPerformerBuilder<?> builder2 = new GettersDynamicPerformerBuilder(type, mockExtractor)
 		then:
 			builder2.getType() == type
+			builder2.getRequirementFilters().isEmpty()
 			builder2.getIncludingFilters().isEmpty()
 			builder2.getExcludingFilters().isEmpty()
 			builder2.getGettersExtractor().is(mockExtractor)
@@ -55,6 +57,7 @@ class GettersDynamicPerformerBuilderTest extends Specification {
 		expect: "both including and excluding filters are empty at the beginning"
 			builder.getIncludingFilters().isEmpty()
 			builder.getExcludingFilters().isEmpty()
+			builder.getRequirementFilters().isEmpty()
 
 		when: "add filter is called with a predicate"
 			builder.addFilter(mockPredicate)
@@ -82,6 +85,14 @@ class GettersDynamicPerformerBuilderTest extends Specification {
 			builder.addExcludingFilter(mockPredicate2)
 		then: "exclusing filters are now contains one instance of each predicate"
 			builder.getExcludingFilters() == [mockPredicate, mockPredicate2] as Set
+
+		when: "add requirement filter is called with another predicate any number of times"
+			builder.addRequirement(mockPredicate2)
+			builder.addRequirement(mockPredicate)
+			builder.addRequirement(mockPredicate2)
+			builder.addRequirement(mockPredicate)
+		then: "requirement filters are now contains one instance of each predicate"
+			builder.getRequirementFilters() == [mockPredicate2, mockPredicate] as Set
 	}
 
 	def "add including/exclusing filter - pattern"() {
@@ -117,6 +128,91 @@ class GettersDynamicPerformerBuilderTest extends Specification {
 			builder.addExcludingFilter("qwe")
 		then:
 			builder.getExcludingFilters() == [ppRty, ppQwe] as Set
+	}
+
+	def "build with two requirement filters"() {
+		given: "custom mock property extractor and builder created upon it"
+			ClassPropertyExtractor<GetterClassProperty<?, ?>> mockExtractor = Mock()
+			GettersDynamicPerformerBuilder<?> builder = new GettersDynamicPerformerBuilder(Object, mockExtractor)
+		and: "two custom mock 'requirement' filters registered in the builder"
+			Predicate<Method> requirementFilter1 = Mock()
+			Predicate<Method> requirementFilter2 = Mock()
+			builder.addRequirement(requirementFilter1)
+			builder.addRequirement(requirementFilter2)
+		and: "two custom mock including and excluding filters registered in the builder"
+			Predicate<Method> includingFilter = Mock()
+			Predicate<Method> excludingFilter = Mock()
+			builder.addFilter(includingFilter)
+			builder.addExcludingFilter(excludingFilter)
+		and: "map of three mock getter properties, mapped by custom keys"
+			ClassPropertyKey key1 = Mock()
+			ClassPropertyKey key2 = Mock()
+			ClassPropertyKey key3 = Mock()
+			GetterClassProperty<?, ?> getter1 = Mock()
+			getter1.getKey() >> key1
+			GetterClassProperty<?, ?> getter2 = Mock()
+			getter2.getKey() >> key2
+			GetterClassProperty<?, ?> getter3 = Mock()
+			getter3.getKey() >> key3
+			Map<ClassPropertyKey, GetterClassProperty<?, ?>> gettersMap = [
+					(key1): getter1,
+					(key2): getter2,
+					(key3): getter3,
+				]
+		and: "two any method objects"
+			Method theMethod1 = Object.class.getDeclaredMethod("equals", Object)
+			Method theMethod2 = Object.class.getDeclaredMethod("hashCode")
+			Method theMethod3 = Object.class.getDeclaredMethod("clone")
+
+		when: "build is called with some name"
+			def result = builder.build("someName")
+		then: "extractor, specified in the constructor is called with the class, specified in the constructor"
+			1 * mockExtractor.extractAll(Object) >> gettersMap
+
+		and: "Method is received from the first property value from the returned map of properties"
+			1 * getter1.getGetter() >> theMethod1
+		and: "requirement filters are called in order, until any of them returns false"
+			1 * requirementFilter1.test(theMethod1) >> false
+		and:
+			0 * requirementFilter2.test(_)
+			0 * includingFilter.test(_)
+			0 * excludingFilter.test(_)
+
+		and: "Second method is received from the second property value"
+			1 * getter2.getGetter() >> theMethod2
+		and:
+			1 * requirementFilter1.test(theMethod2) >> true
+			1 * requirementFilter2.test(theMethod2) >> false
+		and:
+			0 * includingFilter.test(_)
+			0 * excludingFilter.test(_)
+
+		and: "Third method is received"
+			1 * getter3.getGetter() >> theMethod3
+		and:
+			1 * requirementFilter1.test(theMethod3) >> true
+			1 * requirementFilter2.test(theMethod3) >> true
+		and:
+			1 * includingFilter.test(theMethod3) >> true
+			1 * excludingFilter.test(theMethod3) >> false
+
+		and: "result contains specified name"
+			result.getName() == "someName"
+		and: "result is a composite performer with a single delegate performer"
+			result instanceof CompositeComparisonPerformer
+			result.getPerformers().size() == 1
+		and: "delegate performer is an instance of the PropertyDelegatePerformer"
+			def propertyPerformer = result.getPerformers()[key3]
+			propertyPerformer instanceof PropertyDelegatePerformer
+		and: "delegate contains property from the mextractor map, and default dynamic performer from the builder"
+			propertyPerformer.getProperty().is(getter3)
+			propertyPerformer.getDelegatePerformer().is(builder.getDynamicPerformer())
+
+		and: "getter1 is not included, for first requirement filter returned false"
+			result.getPerformers()[key1] == null
+
+		and: "getter2 is not included, for second requirement filter returned false"
+			result.getPerformers()[key2] == null
 	}
 
 	def "build"() {
